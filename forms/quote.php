@@ -1,45 +1,87 @@
 <?php
-  /**
-  * Requires the "PHP Email Form" library
-  * The "PHP Email Form" library is available only in the pro version of the template
-  * The library should be uploaded to: vendor/php-email-form/php-email-form.php
-  * For more info and help: https://bootstrapmade.com/php-email-form/
-  */
+/**
+ * Quote Form Handler
+ * Stores form data directly to MySQL database
+ */
 
-  // Replace contact@example.com with your real receiving email address
-  $receiving_email_address = 'contact@example.com';
+// Include database configuration
+include 'db_config.php';
 
-  if( file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php' )) {
-    include( $php_email_form );
-  } else {
-    die( 'Unable to load the "PHP Email Form" Library!');
-  }
+// Check if form is submitted via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // Get and sanitize form data
+    $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+    $type = isset($_POST['type']) ? trim($_POST['type']) : '';
+    $lot_area = isset($_POST['lot_area']) ? trim($_POST['lot_area']) : '';
+    $budget = isset($_POST['budget']) ? trim($_POST['budget']) : '';
+    $message = isset($_POST['message']) ? trim($_POST['message']) : '';
+    
+    // Validation
+    $errors = [];
+    
+    if (empty($name)) {
+        $errors[] = 'Name is required';
+    }
+    
+    if (empty($email)) {
+        $errors[] = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Invalid email format';
+    }
+    
+    if (empty($phone)) {
+        $errors[] = 'Phone is required';
+    }
+    
+    if (empty($type)) {
+        $errors[] = 'Project type is required';
+    }
+    
+    if (empty($lot_area)) {
+        $errors[] = 'Lot area is required';
+    }
+    
+    if (empty($budget)) {
+        $errors[] = 'Project location is required';
+    }
+    
+    if (empty($message)) {
+        $errors[] = 'Project description is required';
+    }
+    
+    // If there are validation errors, return them
+    if (!empty($errors)) {
+        die(implode(', ', $errors));
+    }
+    
+    // Prepare and bind SQL statement (prevents SQL injection)
+    $stmt = $conn->prepare("INSERT INTO quote_submissions (name, email, phone, project_type, lot_area, project_location, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+    
+    if (!$stmt) {
+        die('Error preparing statement: ' . $conn->error);
+    }
+    
+    // Bind parameters
+    $stmt->bind_param("sssssss", $name, $email, $phone, $type, $lot_area, $budget, $message);
+    
+    // Execute statement
+    if ($stmt->execute()) {
+        echo 'OK';
+    } else {
+        die('Error storing quote request: ' . $stmt->error);
+    }
+    
+    // Close statement
+    $stmt->close();
+    
+} else {
+    // If not a POST request
+    die('Invalid request method');
+}
 
-  $contact = new PHP_Email_Form;
-  $contact->ajax = true;
-  
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['name'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject = 'Request for a quote';
-
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
-
-  $contact->add_message( $_POST['name'], 'From');
-  $contact->add_message( $_POST['email'], 'Email');
-  $contact->add_message( $_POST['phone'], 'Phone');
-  isset($_POST['type']) && $contact->add_message($_POST['type'], 'Type');
-  isset($_POST['timeline']) && $contact->add_message($_POST['timeline'], 'Timeline');
-  isset($_POST['budget']) && $contact->add_message($_POST['budget'], 'Budget');
-  $contact->add_message( $_POST['message'], 'Message', 10);
-
-  echo $contact->send();
+// Close database connection
+$conn->close();
 ?>

@@ -1,42 +1,72 @@
 <?php
-  /**
-  * Requires the "PHP Email Form" library
-  * The "PHP Email Form" library is available only in the pro version of the template
-  * The library should be uploaded to: vendor/php-email-form/php-email-form.php
-  * For more info and help: https://bootstrapmade.com/php-email-form/
-  */
+/**
+ * Contact Form Handler
+ * Stores form data directly to MySQL database
+ */
 
-  // Replace contact@example.com with your real receiving email address
-  $receiving_email_address = 'contact@example.com';
+// Include database configuration
+include 'db_config.php';
 
-  if( file_exists($php_email_form = '../assets/vendor/php-email-form/php-email-form.php' )) {
-    include( $php_email_form );
-  } else {
-    die( 'Unable to load the "PHP Email Form" Library!');
-  }
+// Check if form is submitted via POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // Get and sanitize form data
+    $name = isset($_POST['name']) ? trim($_POST['name']) : '';
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $subject = isset($_POST['subject']) ? trim($_POST['subject']) : '';
+    $message = isset($_POST['message']) ? trim($_POST['message']) : '';
+    
+    // Validation
+    $errors = [];
+    
+    if (empty($name)) {
+        $errors[] = 'Name is required';
+    }
+    
+    if (empty($email)) {
+        $errors[] = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Invalid email format';
+    }
+    
+    if (empty($subject)) {
+        $errors[] = 'Subject is required';
+    }
+    
+    if (empty($message)) {
+        $errors[] = 'Message is required';
+    }
+    
+    // If there are validation errors, return them
+    if (!empty($errors)) {
+        die(implode(', ', $errors));
+    }
+    
+    // Prepare and bind SQL statement (prevents SQL injection)
+    $stmt = $conn->prepare("INSERT INTO contact_submissions (name, email, subject, message, created_at) VALUES (?, ?, ?, ?, NOW())");
+    
+    if (!$stmt) {
+        die('Error preparing statement: ' . $conn->error);
+    }
+    
+    // Bind parameters
+    $stmt->bind_param("ssss", $name, $email, $subject, $message);
+    
+    // Execute statement
+    if ($stmt->execute()) {
+        echo 'OK';
+    } else {
+        die('Error storing message: ' . $stmt->error);
+    }
+    
+    // Close statement
+    $stmt->close();
+    
+} else {
+    // If not a POST request
+    die('Invalid request method');
+}
 
-  $contact = new PHP_Email_Form;
-  $contact->ajax = true;
-  
-  $contact->to = $receiving_email_address;
-  $contact->from_name = $_POST['name'];
-  $contact->from_email = $_POST['email'];
-  $contact->subject = $_POST['subject'];
-
-  // Uncomment below code if you want to use SMTP to send emails. You need to enter your correct SMTP credentials
-  /*
-  $contact->smtp = array(
-    'host' => 'example.com',
-    'username' => 'example',
-    'password' => 'pass',
-    'port' => '587'
-  );
-  */
-
-  $contact->add_message( $_POST['name'], 'From');
-  $contact->add_message( $_POST['email'], 'Email');
-  isset($_POST['phone']) && $contact->add_message($_POST['phone'], 'Phone');
-  $contact->add_message( $_POST['message'], 'Message', 10);
-
-  echo $contact->send();
+// Close database connection
+$conn->close();
 ?>

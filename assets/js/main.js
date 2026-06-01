@@ -1,11 +1,3 @@
-/**
-* Template Name: iConstruction
-* Template URL: https://bootstrapmade.com/iconstruction-bootstrap-construction-template/
-* Updated: Jul 27 2025 with Bootstrap v5.3.7
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-*/
-
 (function() {
   "use strict";
 
@@ -66,13 +58,23 @@
   const preloader = document.querySelector('#preloader');
   if (preloader) {
     window.addEventListener('load', () => {
-      preloader.remove();
+      // Add fade-out effect
+      preloader.style.transition = 'opacity 0.6s ease-out';
+      preloader.style.opacity = '0';
+      preloader.style.pointerEvents = 'none';
+      
+      // Remove after fade completes
+      setTimeout(() => {
+        preloader.remove();
+      }, 600);
     });
   }
 
   /**
    * Scroll top button
    */
+  // Scroll top button removed
+  /* 
   let scrollTop = document.querySelector('.scroll-top');
 
   function toggleScrollTop() {
@@ -90,6 +92,7 @@
 
   window.addEventListener('load', toggleScrollTop);
   document.addEventListener('scroll', toggleScrollTop);
+  */
 
   /**
    * Animation on scroll function and init
