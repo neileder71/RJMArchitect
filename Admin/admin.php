@@ -378,6 +378,108 @@ function ensure_finance_records_table($mysqli)
     }
 }
 
+function ensure_leave_requests_table($mysqli)
+{
+    $createTableSql = "
+        CREATE TABLE IF NOT EXISTS leave_requests (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            requester_id INT NULL,
+            employee_name VARCHAR(120) NOT NULL,
+            employee_email VARCHAR(120) NOT NULL,
+            employee_role VARCHAR(40) NOT NULL DEFAULT 'employee',
+            leave_type VARCHAR(80) NOT NULL,
+            from_date DATE NOT NULL,
+            to_date DATE NOT NULL,
+            day_count INT NOT NULL DEFAULT 1,
+            reason VARCHAR(240) NOT NULL,
+            status ENUM('pending', 'approved', 'declined') NOT NULL DEFAULT 'pending',
+            reviewed_by INT NULL,
+            reviewed_at DATETIME NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            KEY idx_leave_requests_requester (requester_id),
+            KEY idx_leave_requests_status (status),
+            KEY idx_leave_requests_from_date (from_date),
+            KEY idx_leave_requests_created_at (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ";
+
+    if (!$mysqli->query($createTableSql)) {
+        throw new Exception('Unable to prepare leave requests table: ' . $mysqli->error);
+    }
+}
+
+function ensure_overtime_requests_table($mysqli)
+{
+    $createTableSql = "
+        CREATE TABLE IF NOT EXISTS overtime_requests (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            requester_id INT NULL,
+            employee_name VARCHAR(120) NOT NULL,
+            employee_email VARCHAR(120) NOT NULL,
+            employee_role VARCHAR(40) NOT NULL DEFAULT 'employee',
+            overtime_date DATE NOT NULL,
+            start_time TIME NOT NULL,
+            end_time TIME NOT NULL,
+            hour_count DECIMAL(6,2) NOT NULL DEFAULT 0,
+            reason VARCHAR(240) NOT NULL,
+            status ENUM('pending', 'approved', 'declined') NOT NULL DEFAULT 'pending',
+            reviewed_by INT NULL,
+            reviewed_at DATETIME NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            KEY idx_overtime_requests_requester (requester_id),
+            KEY idx_overtime_requests_status (status),
+            KEY idx_overtime_requests_date (overtime_date),
+            KEY idx_overtime_requests_created_at (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ";
+
+    if (!$mysqli->query($createTableSql)) {
+        throw new Exception('Unable to prepare overtime requests table: ' . $mysqli->error);
+    }
+}
+
+function map_leave_request_row($row)
+{
+    return [
+        'id' => (int) $row['id'],
+        'requesterId' => isset($row['requester_id']) ? (int) $row['requester_id'] : null,
+        'employee' => $row['employee_name'],
+        'requesterEmail' => $row['employee_email'],
+        'role' => $row['employee_role'],
+        'type' => $row['leave_type'],
+        'from' => $row['from_date'],
+        'to' => $row['to_date'],
+        'days' => (int) $row['day_count'],
+        'reason' => $row['reason'],
+        'status' => $row['status'],
+        'submittedAt' => substr($row['created_at'], 0, 10),
+        'reviewedAt' => $row['reviewed_at'] ? substr($row['reviewed_at'], 0, 10) : '',
+        'reviewedBy' => $row['reviewed_by'] ? (int) $row['reviewed_by'] : null
+    ];
+}
+
+function map_overtime_request_row($row)
+{
+    return [
+        'id' => (int) $row['id'],
+        'requesterId' => isset($row['requester_id']) ? (int) $row['requester_id'] : null,
+        'employee' => $row['employee_name'],
+        'requesterEmail' => $row['employee_email'],
+        'role' => $row['employee_role'],
+        'date' => $row['overtime_date'],
+        'start' => substr($row['start_time'], 0, 5),
+        'end' => substr($row['end_time'], 0, 5),
+        'hours' => (float) $row['hour_count'],
+        'reason' => $row['reason'],
+        'status' => $row['status'],
+        'submittedAt' => substr($row['created_at'], 0, 10),
+        'reviewedAt' => $row['reviewed_at'] ? substr($row['reviewed_at'], 0, 10) : '',
+        'reviewedBy' => $row['reviewed_by'] ? (int) $row['reviewed_by'] : null
+    ];
+}
+
 function ensure_client_billing_projects_table($mysqli)
 {
     $createTableSql = "
@@ -1469,6 +1571,261 @@ elseif ($action === 'delete_billing_project') {
     } catch (Exception $e) {
         error_log('Delete billing project error: ' . $e->getMessage());
         echo json_encode(['success' => false, 'message' => 'Failed to delete billing project']);
+    }
+}
+
+elseif ($action === 'get_leave_requests') {
+    require_login();
+
+    try {
+        ensure_leave_requests_table($mysqli);
+        $isAdmin = current_account_role() === 'admin';
+        $accountId = isset($_SESSION['admin_id']) ? (int) $_SESSION['admin_id'] : 0;
+
+        if ($isAdmin) {
+            $stmt = $mysqli->prepare("
+                SELECT id, requester_id, employee_name, employee_email, employee_role, leave_type, from_date, to_date, day_count, reason, status, reviewed_by, reviewed_at, created_at
+                FROM leave_requests
+                ORDER BY FIELD(status, 'pending', 'approved', 'declined'), created_at DESC, id DESC
+            ");
+        } else {
+            $stmt = $mysqli->prepare("
+                SELECT id, requester_id, employee_name, employee_email, employee_role, leave_type, from_date, to_date, day_count, reason, status, reviewed_by, reviewed_at, created_at
+                FROM leave_requests
+                WHERE requester_id = ?
+                ORDER BY created_at DESC, id DESC
+            ");
+        }
+
+        if (!$stmt) {
+            throw new Exception('Unable to load leave requests: ' . $mysqli->error);
+        }
+
+        if (!$isAdmin) {
+            $stmt->bind_param("i", $accountId);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $records = [];
+        while ($row = $result->fetch_assoc()) {
+            $records[] = map_leave_request_row($row);
+        }
+        $stmt->close();
+
+        echo json_encode(['success' => true, 'records' => $records]);
+    } catch (Exception $e) {
+        error_log('Get leave requests error: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to load leave requests']);
+    }
+}
+
+elseif ($action === 'save_leave_request') {
+    require_login();
+
+    if (current_account_role() !== 'employee') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Only employee accounts can submit leave requests.']);
+        exit;
+    }
+
+    $leaveType = trim($input['leave_type'] ?? '');
+    $fromDate = trim($input['from_date'] ?? '');
+    $toDate = trim($input['to_date'] ?? '');
+    $reason = trim($input['reason'] ?? '');
+    $allowedTypes = ['Vacation Leave', 'Sick Leave', 'Emergency Leave', 'Personal Leave'];
+
+    $fromTimestamp = strtotime($fromDate);
+    $toTimestamp = strtotime($toDate);
+    $dayCount = ($fromTimestamp && $toTimestamp && $toTimestamp >= $fromTimestamp)
+        ? (int) floor(($toTimestamp - $fromTimestamp) / 86400) + 1
+        : 0;
+
+    if (!in_array($leaveType, $allowedTypes, true) || !$fromTimestamp || !$toTimestamp || $dayCount <= 0 || $reason === '') {
+        echo json_encode(['success' => false, 'message' => 'Please complete a valid leave request.']);
+        exit;
+    }
+
+    if (strlen($reason) > 240) {
+        echo json_encode(['success' => false, 'message' => 'Reason must be 240 characters or fewer.']);
+        exit;
+    }
+
+    try {
+        ensure_leave_requests_table($mysqli);
+
+        $requesterId = isset($_SESSION['admin_id']) ? (int) $_SESSION['admin_id'] : 0;
+        $employeeName = trim($_SESSION['admin_name'] ?? '') ?: 'Employee';
+        $employeeEmail = trim($_SESSION['admin_email'] ?? '');
+        $employeeRole = current_account_role();
+
+        $stmt = $mysqli->prepare("
+            INSERT INTO leave_requests (requester_id, employee_name, employee_email, employee_role, leave_type, from_date, to_date, day_count, reason, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        ");
+
+        if (!$stmt) {
+            throw new Exception('Unable to save leave request: ' . $mysqli->error);
+        }
+
+        $stmt->bind_param("issssssis", $requesterId, $employeeName, $employeeEmail, $employeeRole, $leaveType, $fromDate, $toDate, $dayCount, $reason);
+        if (!$stmt->execute()) {
+            throw new Exception('Unable to save leave request: ' . $stmt->error);
+        }
+        $requestId = $stmt->insert_id;
+        $stmt->close();
+
+        echo json_encode(['success' => true, 'message' => 'Leave request submitted', 'request_id' => $requestId]);
+    } catch (Exception $e) {
+        error_log('Save leave request error: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to submit leave request']);
+    }
+}
+
+elseif ($action === 'save_overtime_request') {
+    require_login();
+
+    if (current_account_role() !== 'employee') {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Only employee accounts can submit overtime requests.']);
+        exit;
+    }
+
+    $overtimeDate = trim($input['overtime_date'] ?? '');
+    $startTime = trim($input['start_time'] ?? '');
+    $endTime = trim($input['end_time'] ?? '');
+    $reason = trim($input['reason'] ?? '');
+
+    $startTimestamp = strtotime($overtimeDate . ' ' . $startTime);
+    $endTimestamp = strtotime($overtimeDate . ' ' . $endTime);
+    $hourCount = ($startTimestamp && $endTimestamp && $endTimestamp > $startTimestamp)
+        ? round(($endTimestamp - $startTimestamp) / 3600, 2)
+        : 0;
+
+    if (!$startTimestamp || !$endTimestamp || $hourCount <= 0 || $reason === '') {
+        echo json_encode(['success' => false, 'message' => 'Please complete a valid overtime request.']);
+        exit;
+    }
+
+    if (strlen($reason) > 240) {
+        echo json_encode(['success' => false, 'message' => 'Reason must be 240 characters or fewer.']);
+        exit;
+    }
+
+    try {
+        ensure_overtime_requests_table($mysqli);
+
+        $requesterId = isset($_SESSION['admin_id']) ? (int) $_SESSION['admin_id'] : 0;
+        $employeeName = trim($_SESSION['admin_name'] ?? '') ?: 'Employee';
+        $employeeEmail = trim($_SESSION['admin_email'] ?? '');
+        $employeeRole = current_account_role();
+
+        $stmt = $mysqli->prepare("
+            INSERT INTO overtime_requests (requester_id, employee_name, employee_email, employee_role, overtime_date, start_time, end_time, hour_count, reason, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        ");
+
+        if (!$stmt) {
+            throw new Exception('Unable to save overtime request: ' . $mysqli->error);
+        }
+
+        $stmt->bind_param("issssssds", $requesterId, $employeeName, $employeeEmail, $employeeRole, $overtimeDate, $startTime, $endTime, $hourCount, $reason);
+        if (!$stmt->execute()) {
+            throw new Exception('Unable to save overtime request: ' . $stmt->error);
+        }
+        $requestId = $stmt->insert_id;
+        $stmt->close();
+
+        echo json_encode(['success' => true, 'message' => 'Overtime request submitted', 'request_id' => $requestId]);
+    } catch (Exception $e) {
+        error_log('Save overtime request error: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to submit overtime request']);
+    }
+}
+
+elseif ($action === 'get_overtime_requests') {
+    require_login();
+
+    try {
+        ensure_overtime_requests_table($mysqli);
+        $isAdmin = current_account_role() === 'admin';
+        $accountId = isset($_SESSION['admin_id']) ? (int) $_SESSION['admin_id'] : 0;
+
+        if ($isAdmin) {
+            $stmt = $mysqli->prepare("
+                SELECT id, requester_id, employee_name, employee_email, employee_role, overtime_date, start_time, end_time, hour_count, reason, status, reviewed_by, reviewed_at, created_at
+                FROM overtime_requests
+                ORDER BY FIELD(status, 'pending', 'approved', 'declined'), created_at DESC, id DESC
+            ");
+        } else {
+            $stmt = $mysqli->prepare("
+                SELECT id, requester_id, employee_name, employee_email, employee_role, overtime_date, start_time, end_time, hour_count, reason, status, reviewed_by, reviewed_at, created_at
+                FROM overtime_requests
+                WHERE requester_id = ?
+                ORDER BY created_at DESC, id DESC
+            ");
+        }
+
+        if (!$stmt) {
+            throw new Exception('Unable to load overtime requests: ' . $mysqli->error);
+        }
+
+        if (!$isAdmin) {
+            $stmt->bind_param("i", $accountId);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $records = [];
+        while ($row = $result->fetch_assoc()) {
+            $records[] = map_overtime_request_row($row);
+        }
+        $stmt->close();
+
+        echo json_encode(['success' => true, 'records' => $records]);
+    } catch (Exception $e) {
+        error_log('Get overtime requests error: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to load overtime requests']);
+    }
+}
+
+elseif ($action === 'update_leave_request_status') {
+    require_admin_role();
+
+    $requestId = isset($input['request_id']) ? (int) $input['request_id'] : 0;
+    $status = trim($input['status'] ?? '');
+
+    if ($requestId <= 0 || !in_array($status, ['approved', 'declined'], true)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid leave request status.']);
+        exit;
+    }
+
+    try {
+        ensure_leave_requests_table($mysqli);
+        $reviewedBy = isset($_SESSION['admin_id']) ? (int) $_SESSION['admin_id'] : 0;
+
+        $stmt = $mysqli->prepare("
+            UPDATE leave_requests
+            SET status = ?, reviewed_by = ?, reviewed_at = NOW()
+            WHERE id = ?
+            LIMIT 1
+        ");
+
+        if (!$stmt) {
+            throw new Exception('Unable to update leave request: ' . $mysqli->error);
+        }
+
+        $stmt->bind_param("sii", $status, $reviewedBy, $requestId);
+        if (!$stmt->execute()) {
+            throw new Exception('Unable to update leave request: ' . $stmt->error);
+        }
+        $updated = $stmt->affected_rows >= 0;
+        $stmt->close();
+
+        echo json_encode(['success' => $updated, 'message' => 'Leave request updated']);
+    } catch (Exception $e) {
+        error_log('Update leave request status error: ' . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to update leave request']);
     }
 }
 

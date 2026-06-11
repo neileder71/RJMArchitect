@@ -14,7 +14,7 @@
   <link href="../../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="../../assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="../assets/css/preloader.css?v=20260519-14" rel="stylesheet">
-  <link href="../assets/css/dashboard.css?v=20260529-01" rel="stylesheet">
+  <link href="../assets/css/dashboard.css?v=20260610-02" rel="stylesheet">
 </head>
 
 <body>
@@ -89,6 +89,22 @@
             <i class="bi bi-cash-coin"></i>
           </span>
           <span class="workspace-title">Finance Record</span>
+        </div>
+      </div>
+      <div class="workspace-nav">
+        <div class="workspace-header sidebar-link-header" role="button" tabindex="0" data-empty-title="Leave Request" onclick="showSidebarLinkView(event)">
+          <span class="workspace-link-icon">
+            <i class="bi bi-calendar2-check"></i>
+          </span>
+          <span class="workspace-title">Leave Request</span>
+        </div>
+      </div>
+      <div class="workspace-nav">
+        <div class="workspace-header sidebar-link-header" role="button" tabindex="0" data-empty-title="Overtime Request" onclick="showSidebarLinkView(event)">
+          <span class="workspace-link-icon">
+            <i class="bi bi-clock-history"></i>
+          </span>
+          <span class="workspace-title">Overtime Request</span>
         </div>
       </div>
 
@@ -389,16 +405,20 @@
               <i class="bi bi-search"></i>
               <input type="search" id="billingSearchInput" placeholder="Search projects..." aria-label="Search billing projects">
             </label>
-            <label class="billing-status-filter">
+            <div class="billing-status-filter" id="billingStatusFilterWrap">
               <i class="bi bi-funnel"></i>
-              <select id="billingStatusFilter" aria-label="Filter billing projects by status">
-                <option value="all">All statuses</option>
-                <option value="active">Active</option>
-                <option value="pending">Pending</option>
-                <option value="complete">Complete</option>
-                <option value="done">Done</option>
-              </select>
-            </label>
+              <button class="billing-status-filter-btn" id="billingStatusFilterBtn" type="button" aria-label="Filter billing projects by status" aria-haspopup="true" aria-expanded="false" onclick="toggleBillingStatusFilterMenu(event)">
+                <span id="billingStatusFilterText">All statuses</span>
+                <i class="bi bi-chevron-down billing-status-filter-chevron" aria-hidden="true"></i>
+              </button>
+              <div class="billing-status-filter-menu" id="billingStatusFilterMenu" role="menu">
+                <button type="button" role="menuitem" data-status-value="all" onclick="setBillingStatusFilter('all', event)">All statuses</button>
+                <button type="button" role="menuitem" data-status-value="active" onclick="setBillingStatusFilter('active', event)">Active</button>
+                <button type="button" role="menuitem" data-status-value="pending" onclick="setBillingStatusFilter('pending', event)">Pending</button>
+                <button type="button" role="menuitem" data-status-value="complete" onclick="setBillingStatusFilter('complete', event)">Complete</button>
+                <button type="button" role="menuitem" data-status-value="done" onclick="setBillingStatusFilter('done', event)">Done</button>
+              </div>
+            </div>
             <div class="billing-project-list" id="billingProjectList"></div>
           </aside>
 
@@ -481,39 +501,213 @@
                   </thead>
                   <tbody id="billingPhaseBody"></tbody>
                 </table>
+
+                <div class="billing-next-card" id="billingNextCard">
+                  <div class="billing-schedule-item">
+                    <span class="billing-next-icon"><i class="bi bi-calendar3"></i></span>
+                    <div class="billing-schedule-content">
+                      <span class="billing-schedule-label">Next Payment Due</span>
+                      <strong class="billing-schedule-value" id="billingNextAmount">₱ 0.00</strong>
+                      <span class="billing-schedule-control-label">Phase</span>
+                      <select class="billing-schedule-select" id="billingSchedulePhase" aria-label="Billing phase"></select>
+                    </div>
+                  </div>
+                  <div class="billing-schedule-item">
+                    <span class="billing-next-icon"><i class="bi bi-calendar-event"></i></span>
+                    <div class="billing-schedule-content">
+                      <span class="billing-schedule-label">Billing Request Date</span>
+                      <strong class="billing-schedule-value" id="billingDueDate">Not set</strong>
+                      <span class="billing-schedule-control-label">Request on</span>
+                      <input class="billing-schedule-date" id="billingScheduleDate" type="date" aria-label="Billing request date">
+                    </div>
+                  </div>
+                  <div class="billing-schedule-item">
+                    <span class="billing-next-icon"><i class="bi bi-pencil-square"></i></span>
+                    <div class="billing-schedule-content">
+                      <span class="billing-schedule-label">Notes</span>
+                      <p id="billingNotes">Payment details are based on the project billing progress.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div class="billing-history-panel is-hidden" id="billingHistoryPanel"></div>
-
-              <div class="billing-next-card">
-                <div class="billing-schedule-item">
-                  <span class="billing-next-icon"><i class="bi bi-calendar3"></i></span>
-                  <div class="billing-schedule-content">
-                    <span class="billing-schedule-label">Next Payment Due</span>
-                    <strong class="billing-schedule-value" id="billingNextAmount">₱ 0.00</strong>
-                    <span class="billing-schedule-control-label">Phase</span>
-                    <select class="billing-schedule-select" id="billingSchedulePhase" aria-label="Billing phase"></select>
-                  </div>
-                </div>
-                <div class="billing-schedule-item">
-                  <span class="billing-next-icon"><i class="bi bi-calendar-event"></i></span>
-                  <div class="billing-schedule-content">
-                    <span class="billing-schedule-label">Billing Request Date</span>
-                    <strong class="billing-schedule-value" id="billingDueDate">Not set</strong>
-                    <span class="billing-schedule-control-label">Request on</span>
-                    <input class="billing-schedule-date" id="billingScheduleDate" type="date" aria-label="Billing request date">
-                  </div>
-                </div>
-                <div class="billing-schedule-item">
-                  <span class="billing-next-icon"><i class="bi bi-pencil-square"></i></span>
-                  <div class="billing-schedule-content">
-                    <span class="billing-schedule-label">Notes</span>
-                    <p id="billingNotes">Payment details are based on the project billing progress.</p>
-                  </div>
-                </div>
+              <div class="billing-table-wrap billing-history-panel is-hidden" id="billingHistoryPanel">
+                <table class="billing-table billing-history-table">
+                  <thead>
+                    <tr>
+                      <th>Paid On</th>
+                      <th>Phase</th>
+                      <th>Amount Paid (₱)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="billingHistoryBody"></tbody>
+                </table>
               </div>
             </div>
           </section>
+        </div>
+      </section>
+
+      <section class="view-section leave-request-view" id="leaveRequestView" aria-label="Leave requests">
+        <form class="leave-request-form" id="leaveRequestForm">
+          <div class="leave-form-head">
+            <div>
+              <h2>Submit Leave Request</h2>
+              <p>Send your leave request to admin for approval.</p>
+            </div>
+          </div>
+          <div class="leave-form-grid">
+            <label class="finance-expense-field">
+              <span>Leave Type <em class="required-marker">*</em></span>
+              <select id="leaveTypeInput" required>
+                <option value="">Select leave type</option>
+                <option value="Vacation Leave">Vacation Leave</option>
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Emergency Leave">Emergency Leave</option>
+                <option value="Personal Leave">Personal Leave</option>
+              </select>
+            </label>
+            <label class="finance-expense-field">
+              <span>From <em class="required-marker">*</em></span>
+              <input type="date" id="leaveFromInput" required>
+            </label>
+            <label class="finance-expense-field">
+              <span>To <em class="required-marker">*</em></span>
+              <input type="date" id="leaveToInput" required>
+            </label>
+            <label class="finance-expense-field is-wide">
+              <span>Reason <em class="required-marker">*</em></span>
+              <textarea id="leaveReasonInput" rows="3" maxlength="240" placeholder="Enter reason for leave" required></textarea>
+            </label>
+          </div>
+          <div class="leave-form-actions">
+            <button class="finance-primary-btn" type="submit">
+              <i class="bi bi-send"></i>
+              <span>Submit Request</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="leave-summary-grid" id="leaveSummaryGrid">
+          <div class="leave-summary-card">
+            <span>Total Requests</span>
+            <strong id="leaveTotalCount">0</strong>
+          </div>
+          <div class="leave-summary-card is-pending">
+            <span>Pending</span>
+            <strong id="leavePendingCount">0</strong>
+          </div>
+          <div class="leave-summary-card is-approved">
+            <span>Approved</span>
+            <strong id="leaveApprovedCount">0</strong>
+          </div>
+          <div class="leave-summary-card is-declined">
+            <span>Declined</span>
+            <strong id="leaveDeclinedCount">0</strong>
+          </div>
+        </div>
+
+        <div class="leave-panel" id="leaveRequestPanel">
+          <div class="leave-toolbar">
+            <div>
+              <h2 id="leavePanelTitle">Leave Requests</h2>
+              <p id="leavePanelSubtitle">Review submitted leave requests.</p>
+            </div>
+            <label class="leave-search">
+              <i class="bi bi-search"></i>
+              <input type="search" id="leaveSearchInput" placeholder="Search leave requests..." aria-label="Search leave requests">
+            </label>
+            <div class="leave-filter-group" id="leaveFilterGroup" role="group" aria-label="Filter leave requests">
+              <button class="is-active" type="button" data-leave-filter="all" onclick="setLeaveFilter('all')">All</button>
+              <button type="button" data-leave-filter="pending" onclick="setLeaveFilter('pending')">Pending</button>
+              <button type="button" data-leave-filter="approved" onclick="setLeaveFilter('approved')">Approved</button>
+              <button type="button" data-leave-filter="declined" onclick="setLeaveFilter('declined')">Declined</button>
+            </div>
+          </div>
+
+          <div class="leave-table-wrap">
+            <table class="leave-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Leave Type</th>
+                  <th>Date Range</th>
+                  <th>Days</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th id="leaveActionHeader">Action</th>
+                </tr>
+              </thead>
+              <tbody id="leaveRequestBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="view-section overtime-request-view" id="overtimeRequestView" aria-label="Overtime requests">
+        <form class="leave-request-form overtime-request-form" id="overtimeRequestForm">
+          <div class="leave-form-head">
+            <div>
+              <h2>Submit Overtime Request</h2>
+              <p>Send your overtime request to admin for approval.</p>
+            </div>
+          </div>
+          <div class="leave-form-grid">
+            <label class="finance-expense-field">
+              <span>Date <em class="required-marker">*</em></span>
+              <input type="date" id="overtimeDateInput" required>
+            </label>
+            <label class="finance-expense-field">
+              <span>Start Time <em class="required-marker">*</em></span>
+              <input type="time" id="overtimeStartInput" required>
+            </label>
+            <label class="finance-expense-field">
+              <span>End Time <em class="required-marker">*</em></span>
+              <input type="time" id="overtimeEndInput" required>
+            </label>
+            <label class="finance-expense-field is-wide">
+              <span>Reason <em class="required-marker">*</em></span>
+              <textarea id="overtimeReasonInput" rows="3" maxlength="240" placeholder="Enter reason for overtime" required></textarea>
+            </label>
+          </div>
+          <div class="leave-form-actions">
+            <button class="finance-primary-btn" type="submit">
+              <i class="bi bi-send"></i>
+              <span>Submit Request</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="leave-panel overtime-panel" id="overtimeRequestPanel">
+          <div class="leave-toolbar">
+            <div>
+              <h2>My Overtime Requests</h2>
+              <p>Track the overtime requests you submitted.</p>
+            </div>
+          </div>
+
+          <div class="leave-table-wrap">
+            <table class="leave-table overtime-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Hours</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                </tr>
+              </thead>
+              <tbody id="overtimeRequestBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="request-placeholder-panel overtime-admin-notice is-hidden" id="overtimeAdminNotice">
+          <span class="request-placeholder-icon"><i class="bi bi-clock-history"></i></span>
+          <h2>Overtime Request</h2>
+          <p>Employee accounts can submit overtime requests here.</p>
         </div>
       </section>
 
@@ -744,9 +938,14 @@
     <div class="confirm-dialog receipt-preview-dialog">
       <div class="finance-expense-head">
         <h2 id="receiptPreviewTitle">Receipt Preview</h2>
-        <button type="button" onclick="closeFinanceReceiptPreview()" aria-label="Close receipt preview">
-          <i class="bi bi-x-lg"></i>
-        </button>
+        <div class="receipt-preview-actions">
+          <a class="receipt-preview-download" id="receiptPreviewDownload" href="#" download aria-label="Download receipt">
+            <i class="bi bi-download"></i>
+          </a>
+          <button type="button" onclick="closeFinanceReceiptPreview()" aria-label="Close receipt preview">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
       </div>
       <div class="receipt-preview-body" id="receiptPreviewBody"></div>
     </div>
@@ -825,10 +1024,16 @@
     let financeCurrentPage = 1;
     const financeRowsPerPage = 7;
     let billingSelectedProjectId = '';
+    let billingProjectsLoading = false;
+    let billingProjectsLastErrorAt = 0;
     let billingSearchTerm = '';
     let billingStatusFilter = 'all';
     let billingActiveTab = 'phases';
     let billingSchedules = loadBillingSchedules();
+    let leaveSearchTerm = '';
+    let leaveStatusFilter = 'all';
+    let leaveRequests = [];
+    let overtimeRequests = [];
     let selectedProjectId = '';
     let selectedProjectFolder = '';
     let selectedParentFolder = '';
@@ -883,6 +1088,23 @@
       ]
     };
 
+    function debounce(callback, delay = 180) {
+      let timeoutId = null;
+
+      return (...args) => {
+        window.clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => callback(...args), delay);
+      };
+    }
+
+    function requestFrame(callback) {
+      if (window.requestAnimationFrame) {
+        return window.requestAnimationFrame(callback);
+      }
+
+      return window.setTimeout(callback, 16);
+    }
+
     function showToast(message, type = 'error') {
       const region = document.getElementById('toastRegion');
       if (!region) {
@@ -916,52 +1138,62 @@
       }, 3600);
     }
 
-    // Global function wrappers for onclick handlers
-    window.selectBillingProject = (id) => {
-      billingSelectedProjectId = String(id);
-      renderClientBilling();
-    };
-    
-    window.setBillingTab = (tab) => {
-      billingActiveTab = tab;
-      document.querySelectorAll('[data-billing-tab]').forEach(button => {
-        button.classList.toggle('is-active', button.dataset.billingTab === tab);
-      });
-      document.getElementById('billingPhasesPanel').classList.toggle('is-hidden', tab !== 'phases');
-      document.getElementById('billingHistoryPanel').classList.toggle('is-hidden', tab !== 'history');
-    };
-    
-    window.openBillingProjectDetails = openBillingProjectDetails;
-    window.setBillingSchedulePhase = setBillingSchedulePhase;
-    window.setBillingScheduleDate = setBillingScheduleDate;
-    
-    // Other critical global functions
-    window.toggleSidebar = toggleSidebar;
-    window.toggleSidebarCollapse = toggleSidebarCollapse;
-    window.openSidebar = openSidebar;
-    window.showDashboardView = showDashboardView;
-    window.showFinanceRecordView = showFinanceRecordView;
-    window.showClientBillingView = showClientBillingView;
-    window.showSidebarLinkView = showSidebarLinkView;
-    window.openFinanceExpenseModal = openFinanceExpenseModal;
-    window.openAddProjectModal = openAddProjectModal;
-    window.closeAddProjectModal = closeAddProjectModal;
-    window.closeProjectDetailsModal = closeProjectDetailsModal;
-    window.openProjectDetails = openProjectDetails;
-    window.toggleBillingProjectMenu = toggleBillingProjectMenu;
-    window.renameBillingProject = renameBillingProject;
-    window.updateBillingProjectStatus = updateBillingProjectStatus;
-    window.toggleSidebarDropdown = function(event = null) {};
+    async function fetchAdminJson(payload, options = {}) {
+      const timeoutMs = Number(options.timeoutMs || 12000);
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const response = await fetch('../admin.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload || {}),
+          signal: controller.signal
+        });
+
+        if (response.status === 401) {
+          window.location.href = 'login.html';
+          return { success: false, authenticated: false };
+        }
+
+        const responseText = await response.text();
+        let data = {};
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch (error) {
+          throw new Error('The server returned an invalid response.');
+        }
+
+        if (!response.ok) {
+          throw new Error(data.message || 'The server request failed.');
+        }
+
+        return data;
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw new Error('The server is taking too long to respond. Please check XAMPP/MySQL and refresh.');
+        }
+        throw error;
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
+      try {
       clearStuckBackdrop();
       applySidebarPreference();
-      await checkAuth();
+      const isAuthenticated = await checkAuth();
+      if (!isAuthenticated) {
+        return;
+      }
       await loadProjects();
-      await loadBillingProjects();
+      await loadBillingProjects({ silent: true });
       applyProjectFilesDropdownPreference();
       await loadProjectFiles();
       await loadEmails();
+      await loadLeaveRequests({ silent: true });
+      await loadOvertimeRequests({ silent: true });
       if (currentUser.role === 'admin') {
         await loadFinanceRecords();
       }
@@ -972,8 +1204,25 @@
         showProjectFilesView();
       }
 
-      // Wait a bit for DOM to fully settle after rendering
-      await new Promise(resolve => setTimeout(resolve, 100));
+      const debouncedRenderClientBilling = debounce(renderClientBilling, 180);
+      const debouncedRenderFinanceRecords = debounce(renderFinanceRecords, 180);
+      const debouncedRenderFilteredEmails = debounce(renderFilteredEmails, 180);
+      const debouncedRenderLeaveRequests = debounce(renderLeaveRequests, 180);
+      let closeFloatingMenusFrame = 0;
+      const closeFloatingMenus = () => {
+        closeFloatingMenusFrame = 0;
+        closeFinanceRowMenus();
+        closeBillingPayMenus();
+        closeBillingStatusFilterMenu();
+        closeLeaveActionMenus();
+      };
+      const scheduleCloseFloatingMenus = () => {
+        if (closeFloatingMenusFrame) {
+          return;
+        }
+
+        closeFloatingMenusFrame = requestFrame(closeFloatingMenus);
+      };
 
       document.getElementById('sidebarAddProjectBtn').addEventListener('click', addProjectFromSidebar);
       document.getElementById('addProjectForm').addEventListener('submit', saveProjectFromModal);
@@ -1014,7 +1263,7 @@
           return;
         }
         
-        if (event.target.closest('.workspace-action-btn')) {
+        if (event.target?.closest?.('.workspace-action-btn')) {
           return;
         }
 
@@ -1060,16 +1309,19 @@
       if (billingSearchInputElement) {
         billingSearchInputElement.addEventListener('input', event => {
           billingSearchTerm = event.currentTarget.value.trim().toLowerCase();
-          renderClientBilling();
+          debouncedRenderClientBilling();
         });
       }
-      const billingStatusFilterElement = document.getElementById('billingStatusFilter');
-      if (billingStatusFilterElement) {
-        billingStatusFilterElement.addEventListener('change', event => {
-          billingStatusFilter = event.currentTarget.value || 'all';
-          renderClientBilling();
+      const leaveSearchInputElement = document.getElementById('leaveSearchInput');
+      if (leaveSearchInputElement) {
+        leaveSearchInputElement.addEventListener('input', event => {
+          leaveSearchTerm = event.currentTarget.value.trim().toLowerCase();
+          debouncedRenderLeaveRequests();
         });
       }
+      document.getElementById('leaveRequestForm')?.addEventListener('submit', submitLeaveRequest);
+      document.getElementById('overtimeRequestForm')?.addEventListener('submit', submitOvertimeRequest);
+      initNativePickerInputs();
       document.querySelectorAll('.sidebar-dropdown .workspace-action-btn').forEach(button => {
         button.addEventListener('click', event => event.stopPropagation());
       });
@@ -1148,9 +1400,9 @@
       document.getElementById('financeSearchInput').addEventListener('input', event => {
         financeSearchTerm = event.currentTarget.value.trim().toLowerCase();
         financeCurrentPage = 1;
-        renderFinanceRecords();
+        debouncedRenderFinanceRecords();
       });
-      document.getElementById('searchInput').addEventListener('input', renderFilteredEmails);
+      document.getElementById('searchInput').addEventListener('input', debouncedRenderFilteredEmails);
       document.getElementById('statusFilter').addEventListener('change', renderFilteredEmails);
       document.addEventListener('click', closeProjectMenus);
       document.addEventListener('click', closeProjectFolderMenus);
@@ -1158,8 +1410,11 @@
       document.addEventListener('click', closeFinanceRowMenus);
       document.addEventListener('click', closeFinanceTypeFilterMenu);
       document.addEventListener('click', closeFinanceDateFilterMenu);
-      window.addEventListener('resize', closeFinanceRowMenus);
-      window.addEventListener('scroll', closeFinanceRowMenus, true);
+      document.addEventListener('click', closeBillingPayMenus);
+      document.addEventListener('click', closeBillingStatusFilterMenu);
+      document.addEventListener('click', closeLeaveActionMenus);
+      window.addEventListener('resize', scheduleCloseFloatingMenus);
+      window.addEventListener('scroll', scheduleCloseFloatingMenus, { capture: true, passive: true });
 
       document.querySelectorAll('.tree-toggle').forEach(button => {
         button.addEventListener('click', () => {
@@ -1184,6 +1439,11 @@
       window.toggleBillingProjectMenu = toggleBillingProjectMenu;
       window.renameBillingProject = renameBillingProject;
       window.updateBillingProjectStatus = updateBillingProjectStatus;
+      window.toggleBillingStatusFilterMenu = toggleBillingStatusFilterMenu;
+      window.setBillingStatusFilter = setBillingStatusFilter;
+      window.toggleLeaveActionMenu = toggleLeaveActionMenu;
+      window.setLeaveFilter = setLeaveFilter;
+      window.setLeaveRequestStatus = setLeaveRequestStatus;
       window.openAddProjectModal = openAddProjectModal;
       window.closeAddProjectModal = closeAddProjectModal;
       window.closeProjectDetailsModal = closeProjectDetailsModal;
@@ -1203,6 +1463,14 @@
       window.closeDeleteFolderModal = closeDeleteFolderModal;
       window.closeDeleteFileModal = closeDeleteFileModal;
       window.closeDeleteProjectModal = closeDeleteProjectModal;
+      } catch (error) {
+        console.error('Dashboard startup error:', error);
+        showToast('Dashboard failed to finish loading. Please refresh or log in again.', 'error');
+        const preloader = document.getElementById('preloader');
+        if (preloader) {
+          preloader.remove();
+        }
+      }
     });
 
     // ===== SIDEBAR MANAGEMENT =====
@@ -1219,13 +1487,28 @@
       let dragPointerId = null;
       let isDraggingSidebar = false;
       let isHorizontalDrag = false;
+      let sidebarDragFrame = 0;
+      let pendingSidebarDeltaX = 0;
 
       const resetSidebarDrag = () => {
         dragPointerId = null;
         isDraggingSidebar = false;
         isHorizontalDrag = false;
+        pendingSidebarDeltaX = 0;
+        sidebarDragFrame = 0;
         sidebar.style.removeProperty('transition');
         sidebar.style.removeProperty('transform');
+      };
+
+      const applySidebarDragTransform = () => {
+        sidebarDragFrame = 0;
+        if (!isDraggingSidebar) {
+          return;
+        }
+
+        sidebar.style.transform = pendingSidebarDeltaX < 0
+          ? `translateX(${pendingSidebarDeltaX}px)`
+          : 'translateX(0)';
       };
 
       sidebar.addEventListener('pointerdown', event => {
@@ -1265,9 +1548,13 @@
 
         if (deltaX < 0) {
           event.preventDefault();
-          sidebar.style.transform = `translateX(${deltaX}px)`;
+          pendingSidebarDeltaX = deltaX;
         } else {
-          sidebar.style.transform = 'translateX(0)';
+          pendingSidebarDeltaX = 0;
+        }
+
+        if (!sidebarDragFrame) {
+          sidebarDragFrame = requestFrame(applySidebarDragTransform);
         }
       });
 
@@ -1397,16 +1684,11 @@
 
     async function checkAuth() {
       try {
-        const response = await fetch('../admin.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'check_auth' })
-        });
-        const data = await response.json();
+        const data = await fetchAdminJson({ action: 'check_auth' }, { timeoutMs: 8000 });
 
         if (!data.authenticated) {
           window.location.href = 'login.html';
-          return;
+          return false;
         }
 
         currentUser = {
@@ -1418,9 +1700,11 @@
         };
         applyRoleAccess();
         renderAccountCard();
+        return true;
       } catch (error) {
         console.error('Auth check error:', error);
         window.location.href = 'login.html';
+        return false;
       }
     }
 
@@ -1447,7 +1731,7 @@
     }
 
     function closeAccountMenuOnOutsideClick(event) {
-      if (!event.target.closest('#accountCard')) {
+      if (!event?.target?.closest?.('#accountCard')) {
         closeAccountMenu();
       }
     }
@@ -1614,6 +1898,8 @@
       document.getElementById('projectWorkspace').classList.remove('is-active');
       document.getElementById('clientBillingView').classList.remove('is-active');
       document.getElementById('financeRecordView').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.remove('is-active');
       document.getElementById('emptyWorkspace').classList.remove('is-active');
       document.getElementById('dashboardNavBtn').classList.add('active');
       document.getElementById('projectFilesNavBtn').classList.remove('active');
@@ -1641,6 +1927,8 @@
       document.getElementById('projectWorkspace').classList.add('is-active');
       document.getElementById('clientBillingView').classList.remove('is-active');
       document.getElementById('financeRecordView').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.remove('is-active');
       document.getElementById('emptyWorkspace').classList.remove('is-active');
       document.getElementById('dashboardNavBtn').classList.remove('active');
       document.getElementById('projectFilesNavBtn').classList.add('active');
@@ -1671,6 +1959,8 @@
       document.getElementById('projectWorkspace').classList.remove('is-active');
       document.getElementById('clientBillingView').classList.remove('is-active');
       document.getElementById('financeRecordView').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.remove('is-active');
       document.getElementById('emptyWorkspace').classList.add('is-active');
       document.getElementById('dashboardNavBtn').classList.remove('active');
       document.getElementById('projectFilesNavBtn').classList.remove('active');
@@ -1692,6 +1982,8 @@
       document.getElementById('dashboardView').classList.remove('is-active');
       document.getElementById('projectWorkspace').classList.remove('is-active');
       document.getElementById('financeRecordView').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.remove('is-active');
       document.getElementById('emptyWorkspace').classList.remove('is-active');
       document.getElementById('clientBillingView').classList.add('is-active');
       document.getElementById('dashboardNavBtn').classList.remove('active');
@@ -1707,7 +1999,7 @@
       setProjectDescriptionText('Track client payments and monitor outstanding amounts across all projects.', false);
       setTopbarAction('project');
       setTopbarActionsVisible(true);
-      loadBillingProjects();
+      loadBillingProjects({ silent: false });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1716,6 +2008,8 @@
       document.getElementById('dashboardView').classList.remove('is-active');
       document.getElementById('projectWorkspace').classList.remove('is-active');
       document.getElementById('clientBillingView').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.remove('is-active');
       document.getElementById('emptyWorkspace').classList.remove('is-active');
       document.getElementById('financeRecordView').classList.add('is-active');
       document.getElementById('dashboardNavBtn').classList.remove('active');
@@ -1735,14 +2029,570 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function showLeaveRequestView(activeHeader = null) {
+      activeView = 'leave_request';
+      document.getElementById('dashboardView').classList.remove('is-active');
+      document.getElementById('projectWorkspace').classList.remove('is-active');
+      document.getElementById('clientBillingView').classList.remove('is-active');
+      document.getElementById('financeRecordView').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.remove('is-active');
+      document.getElementById('emptyWorkspace').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.add('is-active');
+      document.getElementById('dashboardNavBtn').classList.remove('active');
+      document.getElementById('projectFilesNavBtn').classList.remove('active');
+      clearSidebarDropdownActive();
+
+      if (activeHeader) {
+        activeHeader.classList.add('active');
+      }
+
+      document.querySelector('.page-title').classList.remove('is-cover-mode');
+      document.querySelector('.page-title h1').textContent = 'Leave Request';
+      setProjectDescriptionText(
+        isLeaveAdminView()
+          ? 'Approve or decline employee leave requests.'
+          : 'Submit leave requests and track admin approval.',
+        false
+      );
+      setTopbarActionsVisible(false);
+      loadLeaveRequests({ silent: false });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showOvertimeRequestView(activeHeader = null) {
+      activeView = 'overtime_request';
+      document.getElementById('dashboardView').classList.remove('is-active');
+      document.getElementById('projectWorkspace').classList.remove('is-active');
+      document.getElementById('clientBillingView').classList.remove('is-active');
+      document.getElementById('financeRecordView').classList.remove('is-active');
+      document.getElementById('leaveRequestView').classList.remove('is-active');
+      document.getElementById('emptyWorkspace').classList.remove('is-active');
+      document.getElementById('overtimeRequestView').classList.add('is-active');
+      document.getElementById('dashboardNavBtn').classList.remove('active');
+      document.getElementById('projectFilesNavBtn').classList.remove('active');
+      clearSidebarDropdownActive();
+
+      if (activeHeader) {
+        activeHeader.classList.add('active');
+      }
+
+      document.querySelector('.page-title').classList.remove('is-cover-mode');
+      document.querySelector('.page-title h1').textContent = 'Overtime Request';
+      setProjectDescriptionText(
+        isLeaveEmployeeView()
+          ? 'Submit overtime requests for admin approval.'
+          : 'Employee accounts can submit overtime requests.',
+        false
+      );
+      setTopbarActionsVisible(false);
+      renderOvertimeRequestView();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderOvertimeRequestView() {
+      const employeeView = isLeaveEmployeeView();
+      const overtimeRequestView = document.getElementById('overtimeRequestView');
+      overtimeRequestView?.classList.toggle('is-employee-view', employeeView);
+      document.getElementById('overtimeRequestForm')?.classList.toggle('is-hidden', !employeeView);
+      document.getElementById('overtimeRequestPanel')?.classList.toggle('is-hidden', !employeeView);
+      document.getElementById('overtimeAdminNotice')?.classList.toggle('is-hidden', employeeView);
+      renderOvertimeRequests();
+    }
+
+    async function loadOvertimeRequests(options = {}) {
+      try {
+        const data = await fetchAdminJson({ action: 'get_overtime_requests' });
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to load overtime requests');
+        }
+
+        overtimeRequests = Array.isArray(data.records) ? data.records : [];
+        renderOvertimeRequests();
+      } catch (error) {
+        console.error('Overtime requests error:', error);
+        overtimeRequests = [];
+        renderOvertimeRequests();
+        if (!options.silent) {
+          showToast(error.message || 'Failed to load overtime requests.', 'error');
+        }
+      }
+    }
+
+    function renderOvertimeRequests() {
+      const body = document.getElementById('overtimeRequestBody');
+      if (!body) {
+        return;
+      }
+
+      if (!overtimeRequests.length) {
+        body.innerHTML = '<tr><td class="leave-empty" colspan="6">No overtime requests found.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = overtimeRequests.map(request => {
+        const statusLabel = getLeaveStatusLabel(request.status);
+        return `
+          <tr>
+            <td><span class="leave-detail-main">${escapeHtml(formatFinanceDate(request.date))}</span></td>
+            <td><span class="leave-detail-main">${escapeHtml(formatOvertimeTimeRange(request.start, request.end))}</span></td>
+            <td><span class="leave-day-count">${escapeHtml(formatOvertimeHours(request.hours))}</span></td>
+            <td><span class="leave-reason" title="${escapeHtml(request.reason)}">${escapeHtml(formatLeaveReasonPreview(request.reason))}</span></td>
+            <td><span class="leave-status is-${escapeHtml(request.status)}">${escapeHtml(statusLabel)}</span></td>
+            <td><span class="leave-detail-main">${escapeHtml(formatFinanceDate(request.submittedAt || request.date))}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function formatOvertimeTimeRange(start, end) {
+      return `${formatTimeLabel(start)} - ${formatTimeLabel(end)}`;
+    }
+
+    function formatTimeLabel(value) {
+      const [hourValue, minuteValue] = String(value || '').split(':');
+      const hour = Number(hourValue);
+      const minute = Number(minuteValue);
+      if (Number.isNaN(hour) || Number.isNaN(minute)) {
+        return '--:--';
+      }
+
+      const suffix = hour >= 12 ? 'PM' : 'AM';
+      const displayHour = hour % 12 || 12;
+      return `${displayHour}:${String(minute).padStart(2, '0')} ${suffix}`;
+    }
+
+    function formatOvertimeHours(value) {
+      const hours = Number(value || 0);
+      return Number.isInteger(hours) ? String(hours) : hours.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
+    function initNativePickerInputs() {
+      document.querySelectorAll('input[type="date"], input[type="time"]').forEach(input => {
+        input.addEventListener('click', () => openNativePicker(input));
+        input.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openNativePicker(input);
+          }
+        });
+      });
+    }
+
+    function openNativePicker(input) {
+      input.focus();
+      if (typeof input.showPicker === 'function') {
+        try {
+          input.showPicker();
+        } catch (error) {
+          // Some browsers only allow showPicker during direct user gestures.
+        }
+      }
+    }
+
+    function getLeaveStatusLabel(status) {
+      const normalized = String(status || '').toLowerCase();
+      if (normalized === 'approved') {
+        return 'Approved';
+      }
+      if (normalized === 'declined') {
+        return 'Declined';
+      }
+      return 'Pending';
+    }
+
+    async function loadLeaveRequests(options = {}) {
+      try {
+        const data = await fetchAdminJson({ action: 'get_leave_requests' });
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to load leave requests');
+        }
+
+        leaveRequests = Array.isArray(data.records) ? data.records : [];
+        renderLeaveRequests();
+      } catch (error) {
+        console.error('Leave requests error:', error);
+        leaveRequests = [];
+        renderLeaveRequests();
+        if (!options.silent) {
+          showToast(error.message || 'Failed to load leave requests.', 'error');
+        }
+      }
+    }
+
+    function getCurrentUserRole() {
+      return String(currentUser.role || 'employee').toLowerCase();
+    }
+
+    function isLeaveAdminView() {
+      return getCurrentUserRole() === 'admin';
+    }
+
+    function isLeaveEmployeeView() {
+      return getCurrentUserRole() === 'employee';
+    }
+
+    function getVisibleLeaveRequests() {
+      if (isLeaveAdminView()) {
+        return leaveRequests;
+      }
+
+      const userEmail = String(currentUser.email || '').toLowerCase();
+      const userName = String(currentUser.name || '').toLowerCase();
+      return leaveRequests.filter(request => {
+        return String(request.requesterEmail || '').toLowerCase() === userEmail
+          || (!request.requesterEmail && String(request.employee || '').toLowerCase() === userName);
+      });
+    }
+
+    function getFilteredLeaveRequests() {
+      return getVisibleLeaveRequests().filter(request => {
+        const statusMatches = !isLeaveAdminView() || leaveStatusFilter === 'all' || request.status === leaveStatusFilter;
+        const searchSource = [
+          request.employee,
+          request.role,
+          request.type,
+          request.reason,
+          getLeaveStatusLabel(request.status)
+        ].join(' ').toLowerCase();
+        return statusMatches && (!leaveSearchTerm || searchSource.includes(leaveSearchTerm));
+      });
+    }
+
+    function renderLeaveRequests() {
+      const body = document.getElementById('leaveRequestBody');
+      if (!body) {
+        return;
+      }
+
+      const adminView = isLeaveAdminView();
+      const employeeView = isLeaveEmployeeView();
+      const visibleRequests = getVisibleLeaveRequests();
+      const leaveRequestView = document.getElementById('leaveRequestView');
+      const leaveRequestForm = document.getElementById('leaveRequestForm');
+      const leaveSummaryGrid = document.getElementById('leaveSummaryGrid');
+      const leaveRequestPanel = document.getElementById('leaveRequestPanel');
+      const leaveFilterGroup = document.getElementById('leaveFilterGroup');
+      const leaveActionHeader = document.getElementById('leaveActionHeader');
+      const leavePanelTitle = document.getElementById('leavePanelTitle');
+      const leavePanelSubtitle = document.getElementById('leavePanelSubtitle');
+
+      leaveRequestView?.classList.toggle('is-admin-view', adminView);
+      leaveRequestView?.classList.toggle('is-employee-view', employeeView);
+      leaveRequestForm?.classList.toggle('is-hidden', !employeeView);
+      leaveSummaryGrid?.classList.toggle('is-hidden', !adminView);
+      leaveRequestPanel?.classList.toggle('is-hidden', !(adminView || employeeView));
+      leaveFilterGroup?.classList.toggle('is-hidden', !adminView);
+
+      if (leaveActionHeader) {
+        leaveActionHeader.textContent = adminView ? 'Action' : 'Submitted';
+      }
+
+      if (leavePanelTitle) {
+        leavePanelTitle.textContent = adminView ? 'Approval Queue' : 'My Leave Requests';
+      }
+
+      if (leavePanelSubtitle) {
+        leavePanelSubtitle.textContent = adminView
+          ? 'Approve or decline employee leave requests.'
+          : 'Track the leave requests you submitted.';
+      }
+
+      const counts = visibleRequests.reduce((summary, request) => {
+        summary.total += 1;
+        summary[request.status] = (summary[request.status] || 0) + 1;
+        return summary;
+      }, { total: 0, pending: 0, approved: 0, declined: 0 });
+
+      document.getElementById('leaveTotalCount').textContent = counts.total;
+      document.getElementById('leavePendingCount').textContent = counts.pending;
+      document.getElementById('leaveApprovedCount').textContent = counts.approved;
+      document.getElementById('leaveDeclinedCount').textContent = counts.declined;
+
+      document.querySelectorAll('[data-leave-filter]').forEach(button => {
+        button.classList.toggle('is-active', button.dataset.leaveFilter === leaveStatusFilter);
+      });
+
+      const rows = getFilteredLeaveRequests();
+      if (!rows.length) {
+        body.innerHTML = '<tr><td class="leave-empty" colspan="7">No leave requests found.</td></tr>';
+        return;
+      }
+
+      body.innerHTML = rows.map(request => {
+        const statusLabel = getLeaveStatusLabel(request.status);
+        const isPending = request.status === 'pending';
+        const requestId = Number(request.id);
+        const actionCell = adminView
+          ? `
+              <div class="leave-action-menu" data-leave-action-menu>
+                <button class="leave-action-toggle" type="button" onclick="toggleLeaveActionMenu(event, ${requestId})" aria-haspopup="true" aria-expanded="false" ${isPending ? '' : 'disabled'}>
+                  <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                  <span>Action</span>
+                  <i class="bi bi-chevron-down leave-action-chevron" aria-hidden="true"></i>
+                </button>
+                <div class="leave-action-list" role="menu">
+                  <button type="button" role="menuitem" class="is-approve" onclick="setLeaveRequestStatus(${requestId}, 'approved')">
+                    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                    <span>Approve</span>
+                  </button>
+                  <button type="button" role="menuitem" class="is-decline" onclick="setLeaveRequestStatus(${requestId}, 'declined')">
+                    <i class="bi bi-circle" aria-hidden="true"></i>
+                    <span>Decline</span>
+                  </button>
+                </div>
+              </div>
+            `
+          : escapeHtml(formatFinanceDate(request.submittedAt || request.from));
+        return `
+          <tr>
+            <td>
+              <span class="leave-detail-cell">
+                <strong>${escapeHtml(request.employee)}</strong>
+                <span>${escapeHtml(request.role)}</span>
+              </span>
+            </td>
+            <td><span class="leave-detail-main">${escapeHtml(request.type)}</span></td>
+            <td><span class="leave-detail-main">${escapeHtml(formatLeaveDateRange(request.from, request.to))}</span></td>
+            <td><span class="leave-day-count">${Number(request.days || 0)}</span></td>
+            <td><span class="leave-reason" title="${escapeHtml(request.reason)}">${escapeHtml(formatLeaveReasonPreview(request.reason))}</span></td>
+            <td><span class="leave-status is-${escapeHtml(request.status)}">${escapeHtml(statusLabel)}</span></td>
+            <td>${actionCell}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function closeLeaveActionMenus(event = null) {
+      document.querySelectorAll('[data-leave-action-menu].is-open').forEach(menu => {
+        if (event && menu.contains(event.target)) {
+          return;
+        }
+
+        menu.classList.remove('is-open');
+        menu.querySelector('.leave-action-toggle')?.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function toggleLeaveActionMenu(event, id) {
+      event?.stopPropagation();
+      const menu = event?.currentTarget?.closest?.('[data-leave-action-menu]');
+      if (!menu) {
+        return;
+      }
+
+      const isOpen = menu.classList.contains('is-open');
+      closeLeaveActionMenus();
+      menu.classList.toggle('is-open', !isOpen);
+      event.currentTarget.setAttribute('aria-expanded', String(!isOpen));
+      if (!isOpen) {
+        positionLeaveActionMenu(event.currentTarget, menu.querySelector('.leave-action-list'));
+      }
+    }
+
+    function positionLeaveActionMenu(button, menu) {
+      if (!button || !menu) {
+        return;
+      }
+
+      const buttonRect = button.getBoundingClientRect();
+      const viewportPadding = 10;
+      menu.style.left = '0px';
+      menu.style.top = '0px';
+      const menuRect = menu.getBoundingClientRect();
+      const left = Math.min(
+        Math.max(buttonRect.left + (buttonRect.width - menuRect.width) / 2, viewportPadding),
+        window.innerWidth - menuRect.width - viewportPadding
+      );
+      const top = buttonRect.bottom + menuRect.height + 8 <= window.innerHeight - viewportPadding
+        ? buttonRect.bottom + 8
+        : Math.max(buttonRect.top - menuRect.height - 8, viewportPadding);
+
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+    }
+
+    function formatLeaveDateRange(from, to) {
+      const start = formatFinanceDate(from);
+      const end = formatFinanceDate(to);
+      return start === end ? start : `${start} - ${end}`;
+    }
+
+    function formatLeaveReasonPreview(reason, maxLength = 30) {
+      const value = String(reason || '').trim();
+      return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+    }
+
+    function setLeaveFilter(filter) {
+      leaveStatusFilter = filter;
+      renderLeaveRequests();
+    }
+
+    function getLeaveDayCount(from, to) {
+      const start = new Date(`${from}T00:00:00`);
+      const end = new Date(`${to}T00:00:00`);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+        return 0;
+      }
+
+      return Math.floor((end - start) / 86400000) + 1;
+    }
+
+    function getOvertimeHours(date, startTime, endTime) {
+      const start = new Date(`${date}T${startTime}`);
+      const end = new Date(`${date}T${endTime}`);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+        return 0;
+      }
+
+      return Math.round(((end - start) / 3600000) * 100) / 100;
+    }
+
+    async function submitOvertimeRequest(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+
+      if (!isLeaveEmployeeView()) {
+        showToast('Only employee accounts can submit overtime requests.', 'error');
+        return;
+      }
+
+      const dateInput = document.getElementById('overtimeDateInput');
+      const startInput = document.getElementById('overtimeStartInput');
+      const endInput = document.getElementById('overtimeEndInput');
+      const reasonInput = document.getElementById('overtimeReasonInput');
+      const overtimeDate = dateInput.value;
+      const startTime = startInput.value;
+      const endTime = endInput.value;
+      const reason = reasonInput.value.trim();
+      const hours = getOvertimeHours(overtimeDate, startTime, endTime);
+
+      if (!overtimeDate || !startTime || !endTime || !reason || hours <= 0) {
+        showToast('Please complete a valid overtime request time range.', 'error');
+        return;
+      }
+
+      const submitButton = form?.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
+
+      try {
+        const data = await fetchAdminJson({
+          action: 'save_overtime_request',
+          overtime_date: overtimeDate,
+          start_time: startTime,
+          end_time: endTime,
+          reason
+        });
+
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to submit overtime request.');
+        }
+
+        form?.reset();
+        await loadOvertimeRequests({ silent: true });
+        showToast('Overtime request submitted for admin approval.', 'success');
+      } catch (error) {
+        console.error('Submit overtime request error:', error);
+        showToast(error.message || 'Failed to submit overtime request.', 'error');
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      }
+    }
+
+    async function submitLeaveRequest(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+
+      if (!isLeaveEmployeeView()) {
+        showToast('Only employee accounts can submit leave requests.', 'error');
+        return;
+      }
+
+      const typeInput = document.getElementById('leaveTypeInput');
+      const fromInput = document.getElementById('leaveFromInput');
+      const toInput = document.getElementById('leaveToInput');
+      const reasonInput = document.getElementById('leaveReasonInput');
+      const type = typeInput.value.trim();
+      const from = fromInput.value;
+      const to = toInput.value;
+      const reason = reasonInput.value.trim();
+      const days = getLeaveDayCount(from, to);
+
+      if (!type || !from || !to || !reason || !days) {
+        showToast('Please complete a valid leave request date range.', 'error');
+        return;
+      }
+
+      const submitButton = form?.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
+
+      try {
+        const data = await fetchAdminJson({
+          action: 'save_leave_request',
+          leave_type: type,
+          from_date: from,
+          to_date: to,
+          reason
+        });
+
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to submit leave request.');
+        }
+
+        form?.reset();
+        leaveStatusFilter = 'all';
+        await loadLeaveRequests({ silent: true });
+        showToast('Leave request submitted for admin approval.', 'success');
+      } catch (error) {
+        console.error('Submit leave request error:', error);
+        showToast(error.message || 'Failed to submit leave request.', 'error');
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      }
+    }
+
+    async function setLeaveRequestStatus(id, status) {
+      if (!isLeaveAdminView()) {
+        showToast('Only admin accounts can approve leave requests.', 'error');
+        return;
+      }
+
+      const request = leaveRequests.find(item => Number(item.id) === Number(id));
+      if (!request || request.status === status) {
+        return;
+      }
+
+      closeLeaveActionMenus();
+
+      try {
+        const data = await fetchAdminJson({
+          action: 'update_leave_request_status',
+          request_id: id,
+          status
+        });
+
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to update leave request.');
+        }
+
+        await loadLeaveRequests({ silent: true });
+        showToast(`${request.employee} leave request ${getLeaveStatusLabel(status).toLowerCase()}.`, 'success');
+      } catch (error) {
+        console.error('Update leave request status error:', error);
+        showToast(error.message || 'Failed to update leave request.', 'error');
+      }
+    }
+
     async function loadFinanceRecords() {
       try {
-        const response = await fetch('../admin.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_finance_records' })
-        });
-        const data = await response.json();
+        const data = await fetchAdminJson({ action: 'get_finance_records' });
 
         if (!data.success) {
           throw new Error(data.message || 'Failed to load finance records');
@@ -2237,9 +3087,12 @@
       const projectRequired = document.getElementById('financeExpenseProjectRequired');
       const receivedLabel = document.getElementById('financeExpenseReceivedByLabel');
       const receivedInput = document.getElementById('financeExpenseReceivedBy');
+      const receiptField = document.querySelector('.receipt-scan-field');
+      const receiptInput = document.getElementById('financeExpenseReceipt');
 
       descriptionField.classList.remove('is-hidden');
       projectField.classList.remove('is-hidden');
+      receiptField.classList.remove('is-hidden');
       descriptionInput.required = true;
       projectInput.required = true;
       descriptionRequired.classList.remove('is-hidden');
@@ -2261,12 +3114,16 @@
 
       if (expenseType === 'Labor Payroll') {
         descriptionLabel.textContent = 'Payroll Description';
+        receiptField.classList.add('is-hidden');
         descriptionInput.required = false;
+        receiptInput.required = false;
+        receiptInput.value = '';
         descriptionRequired.classList.add('is-hidden');
         descriptionInput.placeholder = 'Payroll period, worker/team, role, or scope';
         descriptionHint.textContent = 'Optional. Leave blank if the project, amount, and recipient are enough.';
         receivedLabel.textContent = 'Received By';
         receivedInput.placeholder = 'Worker, foreman, or team name';
+        updateFinanceReceiptLabel();
         return;
       }
 
@@ -2403,11 +3260,14 @@
 
       const title = document.getElementById('receiptPreviewTitle');
       const body = document.getElementById('receiptPreviewBody');
+      const download = document.getElementById('receiptPreviewDownload');
       const name = record.receiptName || 'Receipt';
       const path = record.receiptPath;
       const isPdf = /\.pdf(?:$|\?)/i.test(path) || /\.pdf$/i.test(name);
 
       title.textContent = name;
+      download.href = path;
+      download.download = name;
       body.innerHTML = isPdf
         ? `<iframe src="${escapeHtml(path)}" title="${escapeHtml(name)}"></iframe>`
         : `<img src="${escapeHtml(path)}" alt="${escapeHtml(name)}">`;
@@ -2417,6 +3277,9 @@
     function closeFinanceReceiptPreview() {
       document.getElementById('receiptPreviewModal').classList.remove('is-active');
       document.getElementById('receiptPreviewBody').innerHTML = '';
+      const download = document.getElementById('receiptPreviewDownload');
+      download.href = '#';
+      download.removeAttribute('download');
     }
 
     function populateFinanceProjectOptions(selectedProject = '') {
@@ -2482,7 +3345,8 @@
         const receiptFile = receiptInput.files[0];
         const existingRecord = id ? financeRecords.find(item => Number(item.id) === Number(id)) : null;
         const hasExistingReceipt = Boolean(existingRecord && existingRecord.receiptPath);
-        if (!receiptFile && !hasExistingReceipt) {
+        const requiresReceipt = expenseType !== 'Labor Payroll';
+        if (requiresReceipt && !receiptFile && !hasExistingReceipt) {
           alert('Receipt scan is required.');
           form.dataset.saving = 'false';
           receiptInput.click();
@@ -2831,6 +3695,43 @@
       return normalized.charAt(0).toUpperCase() + normalized.slice(1);
     }
 
+    function getBillingStatusFilterLabel(status = billingStatusFilter) {
+      return status === 'all' ? 'All statuses' : getBillingProjectStatusLabel(status);
+    }
+
+    function closeBillingStatusFilterMenu(event = null) {
+      const wrap = document.getElementById('billingStatusFilterWrap');
+      if (!wrap || (event && event.target?.closest?.('#billingStatusFilterWrap'))) {
+        return;
+      }
+
+      wrap.classList.remove('is-open');
+      document.getElementById('billingStatusFilterBtn')?.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleBillingStatusFilterMenu(event) {
+      event.stopPropagation();
+      const wrap = document.getElementById('billingStatusFilterWrap');
+      const button = document.getElementById('billingStatusFilterBtn');
+      if (!wrap || !button) {
+        return;
+      }
+
+      const isOpen = wrap.classList.contains('is-open');
+      wrap.classList.toggle('is-open', !isOpen);
+      button.setAttribute('aria-expanded', String(!isOpen));
+    }
+
+    function setBillingStatusFilter(status, event = null) {
+      if (event) {
+        event.stopPropagation();
+      }
+
+      billingStatusFilter = status || 'all';
+      closeBillingStatusFilterMenu();
+      renderClientBilling();
+    }
+
     function renderClientBilling() {
       const records = getFilteredBillingProjects();
       const countText = document.getElementById('billingProjectCount');
@@ -2845,10 +3746,13 @@
           ? `${records.length} of ${billingProjects.length} project${billingProjects.length === 1 ? '' : 's'}`
           : `${billingProjects.length} project${billingProjects.length === 1 ? '' : 's'}`;
       }
-      const statusFilterSelect = document.getElementById('billingStatusFilter');
-      if (statusFilterSelect) {
-        statusFilterSelect.value = billingStatusFilter;
+      const statusFilterText = document.getElementById('billingStatusFilterText');
+      if (statusFilterText) {
+        statusFilterText.textContent = getBillingStatusFilterLabel();
       }
+      document.querySelectorAll('#billingStatusFilterMenu [data-status-value]').forEach(button => {
+        button.classList.toggle('is-selected', button.dataset.statusValue === billingStatusFilter);
+      });
 
       if (!billingSelectedProjectId && records.length) {
         billingSelectedProjectId = String(records[0].project.id);
@@ -2876,7 +3780,8 @@
       } else {
         list.innerHTML = records.map(record => {
           const isActive = String(record.project.id) === String(billingSelectedProjectId);
-          const statusColor = record.receivedPercent >= 70 ? '#15a23a' : (record.receivedPercent <= 15 ? '#d30000' : '#f0b400');
+          const summary = getBillingPhaseSummary(getBillingPhases(record));
+          const statusColor = getBillingProgressColor(summary.receivedPercent);
           const projectStatus = normalizeBillingProjectStatus(record.project.project_status);
           const projectStatusLabel = getBillingProjectStatusLabel(projectStatus);
           return `
@@ -2885,9 +3790,9 @@
                 <strong class="billing-project-name">${escapeHtml(record.project.name || 'Untitled Project')}</strong>
                 <span class="billing-project-card-row">
                   <span>${formatPeso(record.contractValue)}</span>
-                  <span>${record.receivedPercent}% <i class="bi bi-chevron-right"></i></span>
+                  <span>${summary.receivedPercent}% <i class="bi bi-chevron-right"></i></span>
                 </span>
-                <span class="billing-mini-track"><span style="width: ${record.receivedPercent}%; background: ${statusColor};"></span></span>
+                <span class="billing-mini-track"><span style="width: ${summary.receivedPercent}%; background-color: ${statusColor};"></span></span>
               </button>
               <button class="billing-project-menu-btn" type="button" onclick="toggleBillingProjectMenu(event, ${Number(record.project.id)})" aria-expanded="false" aria-haspopup="true" aria-label="Project options">
                 <i class="bi bi-three-dots"></i>
@@ -2934,7 +3839,10 @@
       let cumulativePercent = 0;
 
       return basePhases.map((phase, index) => {
-        const amount = record.contractValue * (phase.percent / 100);
+        const defaultAmount = record.contractValue * (phase.percent / 100);
+        const customAmountKey = `phase_${index}_amount_${record.project?.id}`;
+        const customAmount = localStorage.getItem(customAmountKey);
+        const amount = customAmount !== null ? Math.max(Number(customAmount) || 0, 0) : defaultAmount;
         
         // Check if user has manually set a received amount for this phase
         const customReceivedKey = `phase_${index}_received_${record.project?.id}`;
@@ -2942,16 +3850,16 @@
         
         let received, paidRatio, balance;
         
-        if (customReceived) {
+        if (customReceived !== null) {
           // Use custom amount entered by user
           received = Math.min(Number(customReceived), amount);
-          paidRatio = received / amount;
+          paidRatio = amount > 0 ? received / amount : 0;
           balance = Math.max(amount - received, 0);
         } else {
           // Use calculated amount based on overall received percent
           const previousPercent = cumulativePercent;
           const coveredPercent = Math.max(Math.min(record.receivedPercent - previousPercent, phase.percent), 0);
-          paidRatio = coveredPercent / phase.percent;
+          paidRatio = phase.percent > 0 ? coveredPercent / phase.percent : 0;
           received = amount * paidRatio;
           balance = Math.max(amount - received, 0);
         }
@@ -2970,6 +3878,26 @@
       });
     }
 
+    function getBillingPhaseSummary(phases) {
+      const totalAmount = phases.reduce((total, phase) => total + Number(phase.amount || 0), 0);
+      const receivedAmount = phases.reduce((total, phase) => total + Number(phase.received || 0), 0);
+      const remainingAmount = Math.max(totalAmount - receivedAmount, 0);
+      const receivedPercent = totalAmount > 0 ? Math.round((receivedAmount / totalAmount) * 100) : 0;
+
+      return {
+        totalAmount,
+        receivedAmount,
+        remainingAmount,
+        receivedPercent: Math.min(receivedPercent, 100),
+        remainingPercent: Math.max(100 - Math.min(receivedPercent, 100), 0)
+      };
+    }
+
+    function getBillingProgressColor(percent) {
+      const value = Math.max(Math.min(Number(percent) || 0, 100), 0);
+      return value >= 70 ? '#15a23a' : (value <= 15 ? '#d30000' : '#f0b400');
+    }
+
     function renderBillingDetail() {
       const project = billingProjects.find(item => String(item.id) === String(billingSelectedProjectId));
       const empty = document.getElementById('billingDetailEmpty');
@@ -2984,6 +3912,7 @@
 
       const record = getProjectBillingRecord(project, billingProjects.findIndex(item => String(item.id) === String(project.id)));
       const phases = getBillingPhases(record);
+      const summary = getBillingPhaseSummary(phases);
       const nextPhase = phases.find(phase => phase.balance > 0.01);
       const billingSchedule = getBillingSchedule(record.project.id);
       const selectedPhase = phases.find(phase => Number(phase.key) === Number(billingSchedule.phaseKey)) || nextPhase || phases[0];
@@ -2997,11 +3926,14 @@
         detailStatus.className = `billing-status is-${projectStatus}`;
       }
       document.getElementById('billingContractValue').textContent = formatPeso(record.contractValue);
-      document.getElementById('billingReceivedValue').textContent = formatPeso(record.receivedAmount);
-      document.getElementById('billingRemainingValue').textContent = formatPeso(record.remainingAmount);
-      document.getElementById('billingReceivedLabel').textContent = `Payment made: ${record.receivedPercent}% (${formatPeso(record.receivedAmount)})`;
-      document.getElementById('billingRemainingLabel').textContent = `Remaining: ${record.remainingPercent}% (${formatPeso(record.remainingAmount)})`;
-      document.getElementById('billingProgressFill').style.width = `${record.receivedPercent}%`;
+      document.getElementById('billingReceivedValue').textContent = formatPeso(summary.receivedAmount);
+      document.getElementById('billingRemainingValue').textContent = formatPeso(summary.remainingAmount);
+      document.getElementById('billingReceivedLabel').textContent = `Payment made: ${summary.receivedPercent}% (${formatPeso(summary.receivedAmount)})`;
+      document.getElementById('billingRemainingLabel').textContent = `Remaining: ${summary.remainingPercent}% (${formatPeso(summary.remainingAmount)})`;
+      const progressFill = document.getElementById('billingProgressFill');
+      progressFill.style.width = `${summary.receivedPercent}%`;
+      progressFill.style.setProperty('background', getBillingProgressColor(summary.receivedPercent), 'important');
+      progressFill.style.setProperty('background-color', getBillingProgressColor(summary.receivedPercent), 'important');
       document.getElementById('billingNextAmount').textContent = selectedPhase ? formatPeso(selectedPhase.balance) : formatPeso(0);
       document.getElementById('billingSchedulePhase').innerHTML = phases.map(phase => `
         <option value="${Number(phase.key)}"${selectedPhase && Number(phase.key) === Number(selectedPhase.key) ? ' selected' : ''}>${escapeHtml(phase.name)}</option>
@@ -3026,8 +3958,19 @@
                 <strong>${phase.name}</strong>
               </span>
             </td>
-            <td class="billing-money-cell">${formatPeso(phase.amount)}</td>
-            <td class="billing-money-cell">${formatPeso(phase.billed)} <span class="billing-percent-note is-blue">(${percent}%)</span></td>
+            <td class="billing-money-cell billing-amount-cell">
+              <input
+                type="number"
+                class="billing-amount-input"
+                value="${Number(phase.amount || 0).toFixed(2)}"
+                placeholder="0.00"
+                onchange="updatePhaseAmount(${Number(phase.key)}, this.value)"
+                step="0.01"
+                min="0"
+                aria-label="${escapeHtml(phase.name)} amount"
+              >
+            </td>
+            <td class="billing-money-cell">${formatPeso(phase.billed)}</td>
             <td class="billing-money-cell billing-received-cell">
               <input 
                 type="number" 
@@ -3039,38 +3982,54 @@
                 step="1000"
                 min="0"
               >
-              <span class="billing-percent-note is-green">(${percent}%)</span>
             </td>
             <td class="billing-money-cell">${formatPeso(phase.balance)}</td>
             <td>
               <div class="billing-phase-actions">
-                <select
-                  class="billing-pay-status ${status === 'Paid' ? 'is-paid' : 'is-unpaid'}"
-                  aria-label="Phase payment status"
-                  onchange="setBillingPhaseStatus(${Number(phase.key)}, this.value)"
-                >
-                  <option value="paid"${status === 'Paid' ? ' selected' : ''}>Paid</option>
-                  <option value="unpaid"${status === 'Unpaid' ? ' selected' : ''}>Unpaid</option>
-                </select>
+                <span class="billing-pay-status-wrap ${status === 'Paid' ? 'is-paid' : 'is-unpaid'}">
+                  <button
+                    class="billing-pay-status"
+                    type="button"
+                    aria-label="Phase payment status"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    onclick="toggleBillingPayMenu(event)"
+                  >
+                    <i class="bi ${status === 'Paid' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'}" aria-hidden="true"></i>
+                    <span>${status}</span>
+                    <i class="bi bi-chevron-down billing-pay-chevron" aria-hidden="true"></i>
+                  </button>
+                  <span class="billing-pay-menu" role="menu">
+                    <button class="is-paid-option ${status === 'Paid' ? 'is-selected' : ''}" type="button" role="menuitem" onclick="setBillingPhaseStatus(${Number(phase.key)}, 'paid', event)">
+                      <i class="bi ${status === 'Paid' ? 'bi-check-circle-fill' : 'bi-circle'}" aria-hidden="true"></i>
+                      <span>Paid</span>
+                    </button>
+                    <button class="is-unpaid-option ${status === 'Unpaid' ? 'is-selected' : ''}" type="button" role="menuitem" onclick="setBillingPhaseStatus(${Number(phase.key)}, 'unpaid', event)">
+                      <i class="bi ${status === 'Unpaid' ? 'bi-exclamation-circle-fill' : 'bi-circle'}" aria-hidden="true"></i>
+                      <span>Unpaid</span>
+                    </button>
+                  </span>
+                </span>
               </div>
             </td>
           </tr>
         `;
       }).join('');
 
-      document.getElementById('billingHistoryPanel').innerHTML = phases
-        .filter(phase => phase.received > 0)
-        .map(phase => `
-          <div class="billing-history-row">
-            <strong>${record.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>
-            <span>${phase.name}</span>
-            <strong>${formatPeso(phase.received)}</strong>
-            <span>${phase.balance <= 0.01 ? 'Paid' : 'Partial'}</span>
-          </div>
-        `).join('') || `
-          <div class="billing-history-row">
-            <span>No payment history yet.</span>
-          </div>
+      const paidPhases = phases.filter(phase => phase.received > 0);
+      document.getElementById('billingHistoryBody').innerHTML = paidPhases.length
+        ? paidPhases.map(phase => `
+          <tr>
+            <td>${record.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+            <td>${escapeHtml(phase.name)}</td>
+            <td>${formatPeso(phase.received)}</td>
+            <td><span class="billing-history-status ${phase.balance <= 0.01 ? 'is-paid' : 'is-partial'}">${phase.balance <= 0.01 ? 'Paid' : 'Partial'}</span></td>
+          </tr>
+        `).join('')
+        : `
+          <tr>
+            <td colspan="4" class="billing-history-empty">No payment history yet.</td>
+          </tr>
         `;
 
       setBillingTab(billingActiveTab);
@@ -3104,10 +4063,87 @@
         localStorage.setItem(key, String(amount));
       }
 
-      renderBillingDetail();
+      renderClientBilling();
     }
 
-    function setBillingPhaseStatus(phaseIndex, status) {
+    function updatePhaseAmount(phaseIndex, newAmount) {
+      if (!billingSelectedProjectId) {
+        return;
+      }
+
+      const project = billingProjects.find(item => String(item.id) === String(billingSelectedProjectId));
+      if (!project) {
+        return;
+      }
+
+      const amount = Math.max(Number(newAmount) || 0, 0);
+      const amountKey = `phase_${phaseIndex}_amount_${billingSelectedProjectId}`;
+      const receivedKey = `phase_${phaseIndex}_received_${billingSelectedProjectId}`;
+      const receivedAmount = Number(localStorage.getItem(receivedKey) || 0);
+
+      localStorage.setItem(amountKey, String(amount));
+
+      if (receivedAmount > amount) {
+        localStorage.setItem(receivedKey, String(amount));
+      }
+
+      renderClientBilling();
+    }
+
+    function closeBillingPayMenus(event = null) {
+      if (event && event.target?.closest?.('.billing-pay-status-wrap')) {
+        return;
+      }
+
+      document.querySelectorAll('.billing-pay-status-wrap.is-open').forEach(menu => {
+        menu.classList.remove('is-open');
+        menu.querySelector('.billing-pay-status')?.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    function toggleBillingPayMenu(event) {
+      event.stopPropagation();
+      const wrap = event.currentTarget.closest('.billing-pay-status-wrap');
+      if (!wrap) {
+        return;
+      }
+
+      const isOpen = wrap.classList.contains('is-open');
+      closeBillingPayMenus();
+      wrap.classList.toggle('is-open', !isOpen);
+      event.currentTarget.setAttribute('aria-expanded', String(!isOpen));
+      if (!isOpen) {
+        positionBillingPayMenu(event.currentTarget, wrap.querySelector('.billing-pay-menu'));
+      }
+    }
+
+    function positionBillingPayMenu(button, menu) {
+      if (!button || !menu) {
+        return;
+      }
+
+      const buttonRect = button.getBoundingClientRect();
+      const viewportPadding = 10;
+      menu.style.left = '0px';
+      menu.style.top = '0px';
+      const menuRect = menu.getBoundingClientRect();
+      const left = Math.min(
+        Math.max(buttonRect.left + (buttonRect.width - menuRect.width) / 2, viewportPadding),
+        window.innerWidth - menuRect.width - viewportPadding
+      );
+      const top = buttonRect.bottom + menuRect.height + 8 <= window.innerHeight - viewportPadding
+        ? buttonRect.bottom + 8
+        : Math.max(buttonRect.top - menuRect.height - 8, viewportPadding);
+
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+    }
+
+    function setBillingPhaseStatus(phaseIndex, status, event = null) {
+      if (event) {
+        event.stopPropagation();
+      }
+
       if (!billingSelectedProjectId) {
         return;
       }
@@ -3123,6 +4159,8 @@
         return;
       }
 
+      const nextStatus = status === 'paid' ? 'Paid' : 'Unpaid';
+      const currentStatus = phase.balance <= 0.01 ? 'Paid' : 'Unpaid';
       const key = `phase_${phaseIndex}_received_${billingSelectedProjectId}`;
       if (status === 'paid') {
         localStorage.setItem(key, String(Math.round(phase.amount)));
@@ -3130,7 +4168,11 @@
         localStorage.setItem(key, '0');
       }
 
-      renderBillingDetail();
+      closeBillingPayMenus();
+      renderClientBilling();
+      if (nextStatus !== currentStatus) {
+        showToast(`${phase.name} marked as ${nextStatus}.`, 'success');
+      }
     }
 
     function getPhaseReceivedAmount(phaseIndex, defaultAmount) {
@@ -3141,6 +4183,8 @@
 
     // Expose functions to window for HTML onclick handlers
     window.updatePhaseReceivedAmount = updatePhaseReceivedAmount;
+    window.updatePhaseAmount = updatePhaseAmount;
+    window.toggleBillingPayMenu = toggleBillingPayMenu;
     window.setBillingPhaseStatus = setBillingPhaseStatus;
 
     function openBillingProjectDetails(event = null, projectId = billingSelectedProjectId) {
@@ -3948,7 +4992,7 @@
     }
 
     function closeProjectFolderMenus(event = null) {
-      if (event && event.target.closest('.project-folder-menu, .project-folder-menu-btn')) {
+      if (event && event.target?.closest?.('.project-folder-menu, .project-folder-menu-btn')) {
         return;
       }
 
@@ -4230,12 +5274,7 @@
 
     async function loadProjects() {
       try {
-        const response = await fetch('../admin.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_projects' })
-        });
-        const data = await response.json();
+        const data = await fetchAdminJson({ action: 'get_projects' });
 
         projects = data.success && Array.isArray(data.projects) ? data.projects : [];
         if (projects.length) {
@@ -4248,23 +5287,29 @@
         renderSidebarProjects();
         renderProjectOptions();
         if (activeView === 'client_billing') {
-          loadBillingProjects();
+          loadBillingProjects({ silent: true });
         }
       } catch (error) {
         console.error('Projects error:', error);
       }
     }
 
-    async function loadBillingProjects() {
+    async function loadBillingProjects(options = {}) {
+      const silent = Boolean(options.silent);
+      if (billingProjectsLoading) {
+        return;
+      }
+
+      billingProjectsLoading = true;
       try {
-        const response = await fetch('../admin.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_billing_projects' })
-        });
-        const data = await response.json();
+        const data = await fetchAdminJson({ action: 'get_billing_projects' });
+
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to load client billing projects.');
+        }
 
         billingProjects = data.success && Array.isArray(data.projects) ? data.projects : [];
+        billingProjectsLastErrorAt = 0;
         if (billingSelectedProjectId && !billingProjects.some(project => String(project.id) === String(billingSelectedProjectId))) {
           billingSelectedProjectId = billingProjects.length ? String(billingProjects[0].id) : '';
         }
@@ -4276,7 +5321,14 @@
         }
       } catch (error) {
         console.error('Billing projects error:', error);
-        showToast('Failed to load client billing projects.', 'error');
+        const now = Date.now();
+        const canNotify = !silent && activeView === 'client_billing' && now - billingProjectsLastErrorAt > 10000;
+        billingProjectsLastErrorAt = now;
+        if (canNotify) {
+          showToast(error.message || 'Failed to load client billing projects.', 'error');
+        }
+      } finally {
+        billingProjectsLoading = false;
       }
     }
 
@@ -4315,9 +5367,6 @@
           </div>
         </li>
       `).join('');
-      
-      // Reset initialization flag so drag-drop can reinitialize
-      dragAndDropInitialized = false;
       
       // Initialize drag and drop after rendering
       initProjectDragAndDrop();
@@ -4359,15 +5408,17 @@
     }
 
     function closeProjectMenus(event = null) {
-      if (event && event.target.closest('.sidebar-project-menu, .sidebar-project-menu-btn')) {
+      if (event && event.target?.closest?.('.sidebar-project-menu, .sidebar-project-menu-btn')) {
         return;
       }
-      if (event && event.target.closest('.billing-project-menu, .billing-project-menu-btn')) {
+      if (event && event.target?.closest?.('.billing-project-menu, .billing-project-menu-btn')) {
         return;
       }
 
       document.querySelectorAll('.sidebar-project-row.menu-open').forEach(row => {
         row.classList.remove('menu-open');
+        row.style.removeProperty('--sidebar-project-menu-left');
+        row.style.removeProperty('--sidebar-project-menu-top');
       });
       document.querySelectorAll('.billing-project-item.menu-open').forEach(card => {
         card.classList.remove('menu-open');
@@ -4385,6 +5436,33 @@
 
       closeProjectMenus();
       row.classList.toggle('menu-open', !isOpen);
+      if (!isOpen) {
+        positionSidebarProjectMenu(event.currentTarget, row);
+      }
+    }
+
+    function positionSidebarProjectMenu(button, row) {
+      const menu = row ? row.querySelector('.sidebar-project-menu') : null;
+      if (!button || !row || !menu) {
+        return;
+      }
+
+      row.style.setProperty('--sidebar-project-menu-left', '0px');
+      row.style.setProperty('--sidebar-project-menu-top', '0px');
+
+      const buttonRect = button.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const viewportPadding = 10;
+      const left = Math.min(
+        Math.max(buttonRect.right - menuRect.width, viewportPadding),
+        window.innerWidth - menuRect.width - viewportPadding
+      );
+      const top = buttonRect.bottom + 8 + menuRect.height <= window.innerHeight - viewportPadding
+        ? buttonRect.bottom + 8
+        : Math.max(buttonRect.top - menuRect.height - 8, viewportPadding);
+
+      row.style.setProperty('--sidebar-project-menu-left', `${left}px`);
+      row.style.setProperty('--sidebar-project-menu-top', `${top}px`);
     }
 
     function toggleBillingProjectMenu(event, id) {
@@ -4882,7 +5960,7 @@
     }
 
     function closeAddProjectForm(event) {
-      if (event.target.closest('#sidebarProjectForm, #sidebarAddProjectBtn')) {
+      if (event?.target?.closest?.('#sidebarProjectForm, #sidebarAddProjectBtn')) {
         return;
       }
 
@@ -5034,6 +6112,16 @@
         return;
       }
 
+      if ((header.dataset.emptyTitle || '').toLowerCase() === 'leave request') {
+        showLeaveRequestView(header);
+        return;
+      }
+
+      if ((header.dataset.emptyTitle || '').toLowerCase() === 'overtime request') {
+        showOvertimeRequestView(header);
+        return;
+      }
+
       showEmptyWorkspaceView(header.dataset.emptyTitle || header.textContent.trim(), header);
     }
 
@@ -5153,12 +6241,7 @@
       const list = document.getElementById('projectFilesList');
 
       try {
-        const response = await fetch('../admin.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_project_files' })
-        });
-        const data = await response.json();
+        const data = await fetchAdminJson({ action: 'get_project_files' });
 
         projectFiles = data.success && Array.isArray(data.files) ? data.files : [];
         renderProjectFiles();
@@ -5344,18 +6427,7 @@
       const container = document.getElementById('emailsContainer');
 
       try {
-        const response = await fetch('../admin.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_emails' })
-        });
-
-        if (response.status === 401) {
-          window.location.href = 'login.html';
-          return;
-        }
-
-        const data = await response.json();
+        const data = await fetchAdminJson({ action: 'get_emails' });
         allEmails = data.success && Array.isArray(data.emails) ? data.emails : [];
         updateStats(allEmails);
         renderFilteredEmails();
@@ -5548,26 +6620,17 @@
      * Drag and Drop Projects Reordering
      */
     let draggedProject = null;
-    let dragAndDropInitialized = false;
+    let dragOverProject = null;
 
     function initProjectDragAndDrop() {
-      // Prevent multiple initializations
-      if (dragAndDropInitialized) {
-        return;
-      }
-
-      dragAndDropInitialized = true;
       const projectRows = document.querySelectorAll('.sidebar-project-row[draggable="true"]');
       
       projectRows.forEach(row => {
-        // Remove old listeners to prevent duplicates
-        row.removeEventListener('dragstart', handleProjectDragStart);
-        row.removeEventListener('dragend', handleProjectDragEnd);
-        row.removeEventListener('dragover', handleProjectDragOver);
-        row.removeEventListener('dragleave', handleProjectDragLeave);
-        row.removeEventListener('drop', handleProjectDrop);
+        if (row.dataset.dragReady === 'true') {
+          return;
+        }
 
-        // Add new listeners
+        row.dataset.dragReady = 'true';
         row.addEventListener('dragstart', handleProjectDragStart, false);
         row.addEventListener('dragend', handleProjectDragEnd, false);
         row.addEventListener('dragover', handleProjectDragOver, false);
@@ -5578,25 +6641,21 @@
 
     function handleProjectDragStart(e) {
       draggedProject = this;
-      
-      // Clear all drag-over classes before starting
-      document.querySelectorAll('.sidebar-project-row.drag-over').forEach(row => {
-        row.classList.remove('drag-over');
-      });
+      dragOverProject = null;
       
       this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/html', this.innerHTML);
+      e.dataTransfer.setData('text/plain', this.dataset.projectId || '');
     }
 
     function handleProjectDragEnd(e) {
       draggedProject = null;
       this.classList.remove('dragging');
-      
-      // Clean up all drag-over classes
-      document.querySelectorAll('.sidebar-project-row.drag-over').forEach(row => {
-        row.classList.remove('drag-over');
-      });
+
+      if (dragOverProject) {
+        dragOverProject.classList.remove('drag-over');
+        dragOverProject = null;
+      }
     }
 
     function handleProjectDragOver(e) {
@@ -5605,16 +6664,14 @@
       e.preventDefault();
       e.stopPropagation();
       e.dataTransfer.dropEffect = 'move';
-      
-      // Remove drag-over from all other rows
-      document.querySelectorAll('.sidebar-project-row.drag-over').forEach(row => {
-        if (row !== this) {
-          row.classList.remove('drag-over');
-        }
-      });
-      
+
       // Only add drag-over class if hovering directly on this row, not children
       if (this.classList.contains('sidebar-project-row') && this !== draggedProject) {
+        if (dragOverProject && dragOverProject !== this) {
+          dragOverProject.classList.remove('drag-over');
+        }
+
+        dragOverProject = this;
         this.classList.add('drag-over');
       }
       
@@ -5625,6 +6682,9 @@
       // Remove the drag-over class when leaving this row
       if (!this.contains(e.relatedTarget) || e.relatedTarget === null) {
         this.classList.remove('drag-over');
+        if (dragOverProject === this) {
+          dragOverProject = null;
+        }
       }
     }
 

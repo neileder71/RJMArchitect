@@ -249,6 +249,17 @@
       display: none;
     }
 
+    .error-message i,
+    .success-message i {
+      flex: 0 0 auto;
+    }
+
+    .error-message span,
+    .success-message span {
+      min-width: 0;
+      white-space: nowrap;
+    }
+
     .error-message.show {
       display: flex;
     }
@@ -296,6 +307,20 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 640px) {
+      .form-options {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .forgot-password {
+        align-self: flex-start;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+      }
     }
 
     @media (max-width: 480px) {
@@ -361,6 +386,11 @@
         font-size: 14px;
       }
 
+      .error-message span,
+      .success-message span {
+        white-space: normal;
+      }
+
       .btn-login {
         height: 58px;
         font-size: 13px;
@@ -400,14 +430,5 @@
         font-size: 14px;
       }
 
-      .form-options {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .forgot-password {
-        align-self: flex-end;
-      }
     }
 

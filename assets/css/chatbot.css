@@ -277,10 +277,30 @@
 }
 
 @media (max-width: 480px) {
+  .chat-toggle {
+    bottom: 14px;
+    right: 14px;
+    height: 54px;
+    width: 54px;
+  }
+
   .chatbot {
+    bottom: 76px;
+    max-height: calc(100svh - 96px);
     right: 10px;
-    bottom: 80px;
-    width: calc(100% - 20px);
-    height: 75vh;
+    width: calc(100vw - 20px);
+    height: min(560px, calc(100svh - 96px));
+  }
+
+  .chat-footer {
+    align-items: stretch;
+  }
+
+  .chat-footer input {
+    min-width: 0;
+  }
+
+  .suggestions {
+    margin-left: 0;
   }
 }

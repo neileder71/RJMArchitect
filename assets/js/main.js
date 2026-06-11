@@ -1,17 +1,35 @@
 (function() {
   "use strict";
 
+  const selectBody = document.body;
+  const selectHeader = document.querySelector('#header');
+  let lastScrolledState = null;
+  let scrollTicking = false;
+
   /**
    * Apply .scrolled class to the body as the page is scrolled down
    */
   function toggleScrolled() {
-    const selectBody = document.querySelector('body');
-    const selectHeader = document.querySelector('#header');
-    if (!selectHeader.classList.contains('scroll-up-sticky') && !selectHeader.classList.contains('sticky-top') && !selectHeader.classList.contains('fixed-top')) return;
-    window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
+    if (!selectHeader || (!selectHeader.classList.contains('scroll-up-sticky') && !selectHeader.classList.contains('sticky-top') && !selectHeader.classList.contains('fixed-top'))) return;
+
+    const isScrolled = window.scrollY > 100;
+    if (isScrolled === lastScrolledState) return;
+
+    lastScrolledState = isScrolled;
+    selectBody.classList.toggle('scrolled', isScrolled);
   }
 
-  document.addEventListener('scroll', toggleScrolled);
+  function requestToggleScrolled() {
+    if (scrollTicking) return;
+
+    scrollTicking = true;
+    window.requestAnimationFrame(() => {
+      scrollTicking = false;
+      toggleScrolled();
+    });
+  }
+
+  document.addEventListener('scroll', requestToggleScrolled, { passive: true });
   window.addEventListener('load', toggleScrolled);
 
   /**
@@ -70,29 +88,7 @@
     });
   }
 
-  /**
-   * Scroll top button
-   */
-  // Scroll top button removed
-  /* 
-  let scrollTop = document.querySelector('.scroll-top');
-
-  function toggleScrollTop() {
-    if (scrollTop) {
-      window.scrollY > 100 ? scrollTop.classList.add('active') : scrollTop.classList.remove('active');
-    }
-  }
-  scrollTop.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  });
-
-  window.addEventListener('load', toggleScrollTop);
-  document.addEventListener('scroll', toggleScrollTop);
-  */
+   
 
   /**
    * Animation on scroll function and init

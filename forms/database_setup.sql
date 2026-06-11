@@ -147,3 +147,26 @@ CREATE TABLE IF NOT EXISTS `finance_records` (
   KEY `idx_finance_records_project` (`project_name`),
   KEY `idx_finance_records_remark` (`remark`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Create Leave Requests Table
+CREATE TABLE IF NOT EXISTS `leave_requests` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `requester_id` INT NULL,
+  `employee_name` VARCHAR(120) NOT NULL,
+  `employee_email` VARCHAR(120) NOT NULL,
+  `employee_role` VARCHAR(40) NOT NULL DEFAULT 'employee',
+  `leave_type` VARCHAR(80) NOT NULL,
+  `from_date` DATE NOT NULL,
+  `to_date` DATE NOT NULL,
+  `day_count` INT NOT NULL DEFAULT 1,
+  `reason` VARCHAR(240) NOT NULL,
+  `status` ENUM('pending', 'approved', 'declined') NOT NULL DEFAULT 'pending',
+  `reviewed_by` INT NULL,
+  `reviewed_at` DATETIME NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY `idx_leave_requests_requester` (`requester_id`),
+  KEY `idx_leave_requests_status` (`status`),
+  KEY `idx_leave_requests_from_date` (`from_date`),
+  KEY `idx_leave_requests_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

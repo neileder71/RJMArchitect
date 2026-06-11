@@ -942,6 +942,21 @@ h6 {
   margin-bottom: 10px;
 }
 
+.page-title .container {
+  max-width: 960px;
+  padding-left: 18px;
+  padding-right: 18px;
+  position: relative;
+}
+
+.page-title p {
+  font-size: 18px;
+  line-height: 1.55;
+  margin: 0 auto 16px;
+  max-width: min(780px, 100%);
+  overflow-wrap: anywhere;
+}
+
 .page-title .breadcrumbs ol {
   display: flex;
   flex-wrap: wrap;
@@ -951,6 +966,27 @@ h6 {
   margin: 0;
   font-size: 16px;
   font-weight: 400;
+}
+
+@media (max-width: 576px) {
+  .page-title {
+    padding: 150px 0 64px;
+  }
+
+  .page-title h1 {
+    font-size: 34px;
+    line-height: 1.14;
+  }
+
+  .page-title p {
+    font-size: 15px;
+    line-height: 1.45;
+    max-width: calc(100vw - 56px);
+  }
+
+  .page-title .breadcrumbs ol {
+    font-size: 15px;
+  }
 }
 
 .page-title .breadcrumbs ol li+li {
@@ -1115,6 +1151,10 @@ section,
 
 .hero .hero-content {
   text-align: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding-left: 18px;
+  padding-right: 18px;
 }
 
 .hero .hero-content h1 {
@@ -1193,8 +1233,28 @@ section,
 }
 
 @media (max-width: 576px) {
+  .hero .hero-content {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: calc(100vw - 44px);
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   .hero .hero-content h1 {
-    font-size: 2rem;
+    font-size: 1.68rem;
+    line-height: 1.2;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .hero .hero-content p {
+    font-size: 1rem;
+    line-height: 1.55;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   .hero .hero-actions .btn {
@@ -3494,6 +3554,8 @@ section,
 
 .quote .quote-content {
   padding: 60px 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 992px) {
@@ -3513,7 +3575,31 @@ section,
 
 @media (max-width: 768px) {
   .quote .quote-content h2 {
-    font-size: 32px;
+    font-size: 26px;
+    line-height: 1.22;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: calc(100vw - 56px);
+  }
+
+  .quote .quote-content>p {
+    font-size: 16px;
+    line-height: 1.65;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: calc(100vw - 56px);
+  }
+
+  .quote .benefit-item {
+    max-width: calc(100vw - 56px);
+  }
+
+  .quote .benefit-item .benefit-content {
+    min-width: 0;
+  }
+
+  .quote .benefit-item .benefit-content p {
+    overflow-wrap: anywhere;
   }
 }
 
